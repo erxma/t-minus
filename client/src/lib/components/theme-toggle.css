@@ -1,0 +1,29 @@
+.switch-root {
+    position: relative;
+    display: inline-flex;
+    align-items: center;
+    width: 60px;
+    height: 36px;
+    border-radius: calc(infinity * 1px);
+    padding-left: 3px;
+    padding-right: 3px;
+
+    background-color: var(--button-color);
+    border: var(--border-primary);
+}
+
+.switchThumb {
+    width: 30px;
+    height: 30px;
+    border-radius: calc(infinity * 1px);
+    background-color: var(--bg-primary);
+    color: var(--fg-primary);
+
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.switchThumb[data-state="checked"] {
+    translate: 24px;
+}

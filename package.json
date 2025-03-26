@@ -1,0 +1,9 @@
+{
+  "name": "t-minus",
+  "private": true,
+  "workspaces": [
+    "client",
+    "server",
+    "shared"
+  ]
+}

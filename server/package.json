@@ -1,0 +1,28 @@
+{
+  "name": "@t-minus/server",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "dev": "nodemon src/app.ts",
+    "start": "npm run build && node ./dist/app.js",
+    "build": "rm -rf ./dist && npm run build:deps && tsc",
+    "build:deps": "npm run build -w @t-minus/shared"
+  },
+  "dependencies": {
+    "@t-minus/shared": "*",
+    "@types/cors": "^2.8.17",
+    "cors": "^2.8.5",
+    "express": "^4.21.2",
+    "http-proxy-middleware": "^3.0.3"
+  },
+  "devDependencies": {
+    "@types/express": "^5.0.1",
+    "@types/node": "^22.13.11",
+    "dotenv": "^16.4.7",
+    "nodemon": "^3.1.9",
+    "prettier": "^3.5.3",
+    "ts-node": "^10.9.2",
+    "typescript": "^5.8.2"
+  }
+}
