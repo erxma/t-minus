@@ -24,6 +24,11 @@ const proxyMiddleware = createProxyMiddleware({
 });
 app.use("/mbta-api", proxyMiddleware);
 
+// Basic health check endpoint
+app.get("/health-check", (_, res) => {
+    res.send("OK");
+});
+
 app.use(
     cors({
         origin: ALLOWED_ORIGINS?.split(","),
