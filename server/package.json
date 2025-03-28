@@ -5,7 +5,7 @@
   "type": "module",
   "scripts": {
     "dev": "nodemon src/app.ts",
-    "start": "npm run build && node ./dist/app.js",
+    "start": "node ./dist/app.js",
     "build": "rm -rf ./dist && npm run build:deps && tsc",
     "build:deps": "npm run build -w @t-minus/shared"
   },
