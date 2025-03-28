@@ -6,6 +6,10 @@ import "dotenv/config";
 const PORT = process.env.PORT ?? 3000;
 const MBTA_API_BASE_URL = process.env.MBTA_API_BASE_URL;
 const ALLOWED_ORIGINS = process.env.ALLOWED_ORIGINS;
+const SELF_HEARTBEAT_URL = process.env.SELF_HEARTBEAT_URL;
+const SELF_HEARTBEAT_INTERVAL_MS = Number(
+    process.env.SELF_HEARTBEAT_INTERVAL_MS ?? 0,
+);
 
 if (!MBTA_API_BASE_URL) {
     throw new Error("MBTA API URL not defined.");
@@ -39,3 +43,29 @@ app.listen(PORT);
 
 console.log(`Proxy server running on port ${PORT}`);
 console.log(`Forwarding requests to ${MBTA_API_BASE_URL}`);
+
+// Send regular heartbeats to self to prevent Render spindown...
+// Hobby project with no real users anyway
+if (SELF_HEARTBEAT_INTERVAL_MS > 0) {
+    if (SELF_HEARTBEAT_URL) {
+        setInterval(
+            () => heartbeat(SELF_HEARTBEAT_URL),
+            SELF_HEARTBEAT_INTERVAL_MS,
+        );
+        console.warn(
+            `Self-heartbeat enabled with interval ${SELF_HEARTBEAT_INTERVAL_MS}ms.`,
+        );
+    } else {
+        console.warn(
+            "Non-zero SELF_HEARTBEAT_INTERVAL_MS was set, but no SELF_URL provided. Heartbeat won't run.",
+        );
+    }
+} else {
+    console.log("Self-heartbeat is disabled.");
+}
+
+function heartbeat(url: string) {
+    fetch(url).catch((err) => {
+        console.error(`Self-heartbeat failed: ${err.message}`);
+    });
+}
