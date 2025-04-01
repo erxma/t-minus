@@ -2,6 +2,7 @@ import { createProxyMiddleware } from "http-proxy-middleware";
 import express from "express";
 import cors from "cors";
 import "dotenv/config";
+import assert from "node:assert";
 
 const PORT = process.env.PORT ?? 3000;
 const MBTA_API_BASE_URL = process.env.MBTA_API_BASE_URL;
@@ -10,14 +11,11 @@ const SELF_HEARTBEAT_URL = process.env.SELF_HEARTBEAT_URL;
 const SELF_HEARTBEAT_INTERVAL_MS = Number(
     process.env.SELF_HEARTBEAT_INTERVAL_MS ?? 0,
 );
+const MBTA_API_KEY = process.env.MBTA_API_KEY;
 
-if (!MBTA_API_BASE_URL) {
-    throw new Error("MBTA API URL not defined.");
-}
-
-if (!ALLOWED_ORIGINS) {
-    throw new Error("Allowed origins have not been defined.");
-}
+assert(MBTA_API_BASE_URL);
+assert(ALLOWED_ORIGINS);
+assert(MBTA_API_KEY);
 
 const app = express();
 
@@ -25,6 +23,12 @@ const proxyMiddleware = createProxyMiddleware({
     target: MBTA_API_BASE_URL,
     changeOrigin: true,
     pathRewrite: { "^/mbta-api": "" },
+    on: {
+        proxyReq: (proxyReq, _, res) => {
+            res.on("close", () => proxyReq.destroy());
+            proxyReq.setHeader("X-API-Key", MBTA_API_KEY);
+        },
+    },
 });
 app.use("/mbta-api", proxyMiddleware);
 

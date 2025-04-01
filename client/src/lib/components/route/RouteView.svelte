@@ -21,7 +21,7 @@
     let routeOptions: RouteResource[] | undefined = $state();
 
     onMount(async () => {
-        routeOptions = (await apiClient.getRoutes({
+        routeOptions = (await apiClient.fetch("routes", {
             filters: {
                 type: [RouteType.LIGHT_RAIL, RouteType.HEAVY_RAIL],
             },
@@ -34,7 +34,7 @@
         routeId: string,
         directionId: number,
     ): Promise<StopResource[]> {
-        const response = (await apiClient.getStops({
+        const response = await apiClient.fetch("stops", {
             filters: {
                 route: routeId,
                 direction_id: directionId,
@@ -42,7 +42,7 @@
             fields: {
                 stop: ["name", "wheelchair_boarding"],
             },
-        })) as StopResource[];
+        });
 
         return response;
     }

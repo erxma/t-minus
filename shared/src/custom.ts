@@ -15,7 +15,7 @@ export async function fetchExpectedTimesForStop(
     routeId?: string,
 ): Promise<(PredictionResource | ScheduleResource)[]> {
     // First, fetch all the available predictions for the stop.
-    const predictionsResponse = await client.getPredictions({
+    const predictionsResponse = await client.fetch("predictions", {
         sort: "time",
         filters: {
             stop: stopId,
@@ -67,8 +67,10 @@ export async function fetchExpectedTimesForStop(
         include: ["trip", "prediction", "route"],
     };
 
-    let coincidingSchedulesResponse =
-        await client.getSchedules(schedulesParams);
+    let coincidingSchedulesResponse = await client.fetch(
+        "schedules",
+        schedulesParams,
+    );
 
     schedulesParams = {
         ...schedulesParams,
@@ -81,7 +83,10 @@ export async function fetchExpectedTimesForStop(
             max_time: undefined,
         },
     };
-    let afterSchedulesResponse = await client.getSchedules(schedulesParams);
+    let afterSchedulesResponse = await client.fetch(
+        "schedules",
+        schedulesParams,
+    );
 
     // If there are no results, that means there are no more trips scheduled
     // for the current service day.
@@ -97,7 +102,10 @@ export async function fetchExpectedTimesForStop(
                     .format("YYYY-MM-DD"),
             },
         };
-        afterSchedulesResponse = await client.getSchedules(schedulesParams);
+        afterSchedulesResponse = await client.fetch(
+            "schedules",
+            schedulesParams,
+        );
     }
 
     // Consolidate the predictions and schedules

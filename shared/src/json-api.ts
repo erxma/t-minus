@@ -4,11 +4,11 @@
  */
 
 export interface JsonApiDocument {
-    data: Resource | Resource[] | null;
-    included?: Resource[];
+    data: JsonApiResource | JsonApiResource[] | null;
+    included?: JsonApiResource[];
 }
 
-interface Resource {
+export interface JsonApiResource {
     id: string;
     type: string;
     attributes?: { [key: string]: unknown };
@@ -94,9 +94,9 @@ export function flatten(document: JsonApiDocument): object | object[] | null {
 }
 
 // Helper to flatten only a single resource.
-function flattenResource(
-    resource: Resource,
-    included: Resource[],
+export function flattenResource(
+    resource: JsonApiResource,
+    included: JsonApiResource[],
     shouldDenormalizeRelationships: boolean,
 ): object {
     const relationships = shouldDenormalizeRelationships
@@ -121,7 +121,7 @@ function flattenResource(
 
 function denormalizeRelationships(
     relationships: Relationships,
-    included: Resource[],
+    included: JsonApiResource[],
 ): object {
     const resultEntries: [string, unknown][] = [];
     for (const [key, relObj] of Object.entries(relationships)) {
@@ -134,7 +134,7 @@ function denormalizeRelationships(
 
     function denormalizeIncluded(
         resId: ResourceIdentifier | null,
-        included: Resource[],
+        included: JsonApiResource[],
     ): object | ResourceIdentifier | null {
         if (resId === null) {
             return null;
