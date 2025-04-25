@@ -25,6 +25,9 @@ export function predictionCountdownText(
     // Equivalent minutes, rounded to int
     const mins_rounded = Math.round(time_left_secs / 60);
 
+    // FIXME: Predictions linger a bit after their times pass.
+    // Current rules result in "BRD" changing into "ARR" again
+    // after vehicle leaves.
     if (
         time_left_secs <= 90 &&
         prediction.vehicle!.current_status === "STOPPED_AT" &&

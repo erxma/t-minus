@@ -9,6 +9,12 @@
         "default": "./dist/index.js",
         "types": "./dist/index.d.ts"
       }
+    },
+    "./json-api": {
+      "import": {
+        "default": "./dist/json-api.js",
+        "types": "./dist/json-api.d.ts"
+      }
     }
   },
   "scripts": {

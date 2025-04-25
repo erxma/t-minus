@@ -1,7 +1,6 @@
 import {
     buildUrlParams,
     flatten,
-    JsonApiResource,
     type CollectionRequestParams,
 } from "./json-api.js";
 
@@ -241,15 +240,13 @@ type MbtaApiEndpoints = {
 type EndpointPath = keyof MbtaApiEndpoints;
 
 /**
- * Handlers for all events that the streaming API may send,
- * plus the error case.
+ * Handlers for all events that the streaming API may send.
  */
 export interface MbtaApiEventListeners<Res> {
     onReset?: (resources: Res[]) => void;
     onAdd?: (added: Res) => void;
     onUpdate?: (updated: Res) => void;
     onRemove?: (removedId: string) => void;
-    onError: (err: Error) => void;
 }
 
 export class MbtaApiClient {
@@ -296,10 +293,7 @@ export class MbtaApiClient {
     public listen<Path extends EndpointPath>(
         path: Path,
         params: MbtaApiEndpoints[Path]["requestParams"],
-        listeners: MbtaApiEventListeners<MbtaApiEndpoints[Path]["resource"]>,
     ): EventSource {
-        type Resource = MbtaApiEndpoints[Path]["resource"];
-
         // Build request URL
         const urlParams = buildUrlParams(params);
         // If a key is set, add it as a URL param;
@@ -315,56 +309,7 @@ export class MbtaApiClient {
             withCredentials: true,
         });
 
-        // On event, parse and flatten, then hand off
-        // to the corresponding passed in handler
-        eventSource.addEventListener("reset", (msg) => {
-            const flattened = flattenStreamed(
-                JSON.parse(msg.data),
-                // The API uses plural for the endpoints, but singular
-                // for the "type"...technically not compliant with JSON:API.
-                // Just strip off the "s".
-                path.substring(0, path.length - 1),
-            ) as Resource[];
-            listeners.onReset?.(flattened);
-        });
-        eventSource.addEventListener("add", (msg) => {
-            const flattened = flatten(JSON.parse(msg.data)) as Resource;
-            listeners.onAdd?.(flattened);
-        });
-        eventSource.addEventListener("update", (msg) => {
-            const flattened = flatten(JSON.parse(msg.data)) as Resource;
-            listeners.onUpdate?.(flattened);
-        });
-        eventSource.addEventListener("remove", async (msg) => {
-            const flattened = JSON.parse(msg.data) as { id: string };
-            listeners.onRemove?.(flattened.id);
-        });
-
-        eventSource.onerror = (err) => {
-            listeners.onError(
-                new Error(`Failure in server-sent event stream: ${err}`),
-            );
-        };
-
         // Return the EventSource (most importantly, so it can be closed)
         return eventSource;
     }
-}
-
-/**
- * Flatten the data from a streamed `"reset"` event.
- * A separate function is needed since it's in the format of
- * a single flat array with the primary resources and the includes.
- *
- * @param primaryType The `"type"` of the primary resource,
- * i.e. the directly requested type; the rest are includes.
- */
-function flattenStreamed(
-    msgData: JsonApiResource[],
-    primaryType: string,
-): object[] {
-    // Split the resources into the primary ones ("data") and the included
-    const data = msgData.filter((res) => res.type === primaryType);
-    const included = msgData.filter((res) => res.type !== primaryType);
-    return flatten({ data, included }) as object[];
 }

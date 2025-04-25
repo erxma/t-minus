@@ -11,11 +11,11 @@ export interface JsonApiDocument {
 export interface JsonApiResource {
     id: string;
     type: string;
-    attributes?: { [key: string]: unknown };
-    relationships?: Relationships;
+    attributes: { [key: string]: unknown };
+    relationships: Relationships;
 }
 
-interface ResourceIdentifier {
+export interface ResourceIdentifier {
     id: string;
     type: string;
 }
@@ -86,27 +86,27 @@ export function flatten(document: JsonApiDocument): object | object[] | null {
         return null;
     } else if (Array.isArray(document.data)) {
         return document.data.map((res) =>
-            flattenResource(res, document.included ?? [], true),
+            flattenResource(res, document.included ?? []),
         );
     } else {
-        return flattenResource(document.data, document.included ?? [], true);
+        return flattenResource(document.data, document.included ?? []);
     }
 }
 
 // Helper to flatten only a single resource.
 export function flattenResource(
     resource: JsonApiResource,
-    included: JsonApiResource[],
-    shouldDenormalizeRelationships: boolean,
+    included?: JsonApiResource[],
 ): object {
-    const relationships = shouldDenormalizeRelationships
-        ? denormalizeRelationships(resource.relationships ?? {}, included)
-        : resource.relationships;
+    const relationships =
+        included !== undefined
+            ? denormalizeRelationships(resource.relationships ?? {}, included)
+            : resource.relationships;
 
-    const attributes = resource.attributes;
-    // Replace any "type" attribute with "_type"
+    // Replace any "type" attribute with "type_"
     // JSON:API prohibits such an attribute but it occurs in MBTA API
-    if (attributes?.type) {
+    const attributes = { ...resource.attributes };
+    if (attributes.type) {
         attributes.type_ = attributes.type;
         delete attributes.type;
     }
@@ -114,12 +114,12 @@ export function flattenResource(
     return {
         id: resource.id,
         type: resource.type,
-        ...resource.attributes,
+        ...attributes,
         ...relationships,
     };
 }
 
-function denormalizeRelationships(
+export function denormalizeRelationships(
     relationships: Relationships,
     included: JsonApiResource[],
 ): object {
@@ -144,6 +144,6 @@ function denormalizeRelationships(
             (incl) => incl.type === resId.type && incl.id === resId.id,
         );
         // Do not recursively flatten the relationships of included resources
-        return resource ? flattenResource(resource, included, false) : resId;
+        return resource ? flattenResource(resource) : resId;
     }
 }
