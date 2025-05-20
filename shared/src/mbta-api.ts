@@ -305,9 +305,7 @@ export class MbtaApiClient {
         const url = `${this.baseUrl}/${path}?${new URLSearchParams(urlParams)}`;
 
         // Start listening
-        const eventSource = new EventSource(url, {
-            withCredentials: true,
-        });
+        const eventSource = new EventSource(url);
 
         // Return the EventSource (most importantly, so it can be closed)
         return eventSource;
