@@ -59,6 +59,7 @@
                     "departure_time",
                     "status",
                     "stop_sequence",
+                    "update_type",
                 ],
             },
             filters: {
