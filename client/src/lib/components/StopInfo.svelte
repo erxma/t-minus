@@ -1,5 +1,5 @@
 <script lang="ts">
-    import "@/global.css";
+    import "$lib/global.css";
     import AccessibilityIcon from "./common/AccessibilityIcon.svelte";
     import Loading from "./common/Loading.svelte";
     import RoutePill from "./common/RoutePill.svelte";
@@ -7,7 +7,7 @@
     import { Clock } from "@lucide/svelte";
     import { fade } from "svelte/transition";
 
-    import { predictionCountdownText } from "@lib/util/formatting";
+    import { predictionCountdownText } from "$lib/util/formatting";
     import type {
         PredictionResource,
         RouteResource,

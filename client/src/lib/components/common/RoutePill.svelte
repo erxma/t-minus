@@ -1,5 +1,5 @@
 <script lang="ts">
-    import "@/global.css";
+    import "$lib/global.css";
     import type { RouteResource } from "@t-minus/shared";
 
     interface Props {

@@ -1,5 +1,5 @@
 <script lang="ts">
-    import "@/global.css";
+    import "$lib/global.css";
     import { Accessibility, Slash } from "@lucide/svelte";
 
     interface Props {

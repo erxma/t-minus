@@ -1,5 +1,5 @@
 <script lang="ts">
-    import "@/global.css";
+    import "$lib/global.css";
     import ThemeToggle from "./ThemeToggle.svelte";
 </script>
 

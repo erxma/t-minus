@@ -1,6 +1,6 @@
 <script lang="ts">
-    import AccessibilityIcon from "@lib/components/common/AccessibilityIcon.svelte";
-    import Loading from "@lib/components/common/Loading.svelte";
+    import AccessibilityIcon from "$lib/components/common/AccessibilityIcon.svelte";
+    import Loading from "$lib/components/common/Loading.svelte";
 
     import type { RouteResource, StopResource } from "@t-minus/shared";
 

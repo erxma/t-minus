@@ -5,28 +5,23 @@
     import { Switch } from "bits-ui";
     import { onMount } from "svelte";
 
+    export const ssr = false;
+
     let darkModeOn = $state(false);
     let theme = $derived(darkModeOn ? "dark" : "light");
 
     onMount(() => {
-        // Initial check for theme based on client
-        if (localStorage !== undefined && localStorage.getItem("theme")) {
-            let storedTheme = localStorage.getItem("theme")!;
-            darkModeOn = storedTheme === "dark";
-        } else {
-            darkModeOn = window.matchMedia(
-                "(prefers-color-scheme: dark)",
-            ).matches;
-        }
+        // Get the stored theme preference, which should have initialized
+        // by header inline script
+        let storedTheme = localStorage.getItem("theme")!;
+        darkModeOn = storedTheme === "dark";
     });
 
     $effect(() => {
+        // Update the stored theme when changed
         localStorage.setItem("theme", theme);
-        if (theme === "dark") {
-            document.documentElement.classList.add("dark");
-        } else {
-            document.documentElement.classList.remove("dark");
-        }
+        // Toggle the dark class accordingly
+        document.documentElement.classList.toggle("dark", theme === "dark");
     });
 </script>
 

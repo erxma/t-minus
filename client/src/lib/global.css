@@ -40,15 +40,8 @@
   --line-primary: hsl(0 0% 25%);
 }
 
-#app {
-  width: 100%;
-}
-
 body {
   margin: 0;
-  display: flex;
-  flex-direction: column;
-  place-items: center;
   min-width: 320px;
   min-height: 100vh;
 }

@@ -1,5 +1,5 @@
 <script lang="ts">
-    import "@/global.css";
+    import "$lib/global.css";
     import RoutePill from "../common/RoutePill.svelte";
     import "./route-select.css";
 

@@ -2,7 +2,7 @@
     import RoutePatternSelect from "./RoutePatternSelect.svelte";
     import StopList from "./StopList.svelte";
 
-    import { apiClient } from "@lib/components/api-client";
+    import { apiClient } from "$lib/components/api-client";
     import { RouteType } from "@t-minus/shared";
     import type { RouteResource, StopResource } from "@t-minus/shared";
 

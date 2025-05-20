@@ -1,19 +1,19 @@
 <script lang="ts">
-    import "./global.css";
+    import "$lib/global.css";
 
-    import StopInfo from "./lib/components/StopInfo.svelte";
+    import StopInfo from "$lib/components/StopInfo.svelte";
     import { Drawer } from "vaul-svelte";
-    import Header from "./lib/components/Header.svelte";
+    import Header from "$lib/components/Header.svelte";
     import {
         RouteType,
         type PredictionResource,
         type RouteResource,
         type StopResource,
     } from "@t-minus/shared";
-    import RouteView from "./lib/components/route/RouteView.svelte";
-    import { apiClient } from "./lib/components/api-client";
+    import RouteView from "$lib/components/route/RouteView.svelte";
+    import { apiClient } from "$lib/components/api-client";
     import dayjs from "dayjs";
-    import { MbtaStreamedCollection } from "./lib/components/collections.svelte";
+    import { MbtaStreamedCollection } from "$lib/components/collections.svelte";
 
     let selectedRoute: RouteResource | undefined = $state();
     let selectedStop: StopResource | undefined = $state();
@@ -86,6 +86,26 @@
     }
 </script>
 
+<svelte:head>
+    <title>T-Minus</title>
+    <script>
+        // Initialize theme:
+        // Look for existing stored theme preference
+        let theme = localStorage.getItem("theme");
+        // If none, default to media query result
+        if (!theme) {
+            theme = window.matchMedia("(prefers-color-scheme: dark)").matches
+                ? "dark"
+                : "light";
+        }
+
+        // Toggle the dark class accordingly
+        document.documentElement.classList.toggle("dark", theme === "dark");
+        // Store the chosen theme
+        localStorage.setItem("theme", theme);
+    </script>
+</svelte:head>
+
 <Header />
 <main>
     <RouteView
@@ -116,7 +136,7 @@
 
 <style>
     main {
-        margin: 0 1em 32px 1em;
+        margin-top: 32px;
         display: flex;
         flex-direction: column;
         align-items: center;
