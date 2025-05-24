@@ -10,9 +10,11 @@
     import { fade } from "svelte/transition";
 
     import {
+        fetchNextSchedules,
         RouteType,
         type PredictionResource,
         type RouteResource,
+        type ScheduleResource,
         type StopResource,
     } from "@t-minus/shared";
     import { apiClient } from "$lib/components/api-client";
@@ -28,6 +30,11 @@
     // (Can't be $derived because collection itself needs to be watched for changes)
     let predictions: MbtaStreamedCollection<PredictionResource> | undefined =
         $state();
+    let arrivals: Promise<
+        | readonly Readonly<PredictionResource>[]
+        | readonly Readonly<ScheduleResource>[]
+        | undefined
+    > = $derived(getStopArrivals());
 
     function setSelectedStop(value?: StopResource) {
         // Set value
@@ -116,6 +123,23 @@
 
         return response;
     }
+
+    async function getStopArrivals() {
+        if (!selectedRoute || !selectedStop || !predictions?.data) {
+            return undefined;
+        }
+
+        if (predictions.data.length > 0) {
+            return predictions.data;
+        } else {
+            return await fetchNextSchedules(
+                apiClient,
+                selectedStop.id,
+                dayjs(),
+                selectedRoute.id,
+            );
+        }
+    }
 </script>
 
 <svelte:head>
@@ -177,12 +201,20 @@
                 <Drawer.Close class="drawer-close-default"
                     ><div class="drawer-handle"></div></Drawer.Close
                 >
+                <!-- If there's a selected stop (there should be when drawer is open) -->
                 {#if selectedStop}
-                    <StopInfo
-                        stop={selectedStop}
-                        route={selectedRoute!}
-                        predictions={predictions!.data}
-                    />
+                    <!-- Get list of expected arrivals (a reactive Promise, see above) -->
+                    {#await arrivals}
+                        <!-- Before arrivals are available, show with none -->
+                        <StopInfo stop={selectedStop} route={selectedRoute!} />
+                    {:then arrivals}
+                        <!-- Show with the arrivals -->
+                        <StopInfo
+                            stop={selectedStop}
+                            route={selectedRoute!}
+                            {arrivals}
+                        />
+                    {/await}
                 {/if}
             </Drawer.Content>
         </Drawer.Portal>

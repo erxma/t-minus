@@ -47,8 +47,7 @@ export async function fetchExpectedTimesForStop(
         lastPrediction?.arrival_time ?? lastPrediction?.departure_time ?? now,
     );
 
-    const [lastPredServiceDay, lastPredServiceTime] =
-        serviceDayAndTime(lastPredictionTime);
+    const [_, lastPredServiceTime] = serviceDayAndTime(lastPredictionTime);
 
     let schedulesParams: SchedulesRequestParams = {
         sort: "time",
@@ -72,41 +71,12 @@ export async function fetchExpectedTimesForStop(
         schedulesParams,
     );
 
-    schedulesParams = {
-        ...schedulesParams,
-        page: {
-            limit: 10,
-        },
-        filters: {
-            ...schedulesParams.filters,
-            min_time: lastPredServiceTime,
-            max_time: undefined,
-        },
-    };
-    let afterSchedulesResponse = await client.fetch(
-        "schedules",
-        schedulesParams,
+    let afterSchedulesResponse = await fetchNextSchedules(
+        client,
+        stopId,
+        lastPredictionTime,
+        routeId,
     );
-
-    // If there are no results, that means there are no more trips scheduled
-    // for the current service day.
-    // So get a few from the start of the next service day instead.
-    if (afterSchedulesResponse.length === 0) {
-        schedulesParams = {
-            ...schedulesParams,
-            filters: {
-                ...schedulesParams.filters,
-                min_time: "03:00",
-                date: dayjs(lastPredServiceDay)
-                    .add(1, "day")
-                    .format("YYYY-MM-DD"),
-            },
-        };
-        afterSchedulesResponse = await client.fetch(
-            "schedules",
-            schedulesParams,
-        );
-    }
 
     // Consolidate the predictions and schedules
     const expectations = [
@@ -118,6 +88,61 @@ export async function fetchExpectedTimesForStop(
     ];
 
     return expectations;
+}
+
+export async function fetchNextSchedules(
+    client: MbtaApiClient,
+    stopId: string,
+    minTime: Readonly<Dayjs>,
+    routeId?: string,
+    limit?: number,
+): Promise<readonly Readonly<ScheduleResource>[]> {
+    const [minServiceDay, minServiceTime] = serviceDayAndTime(minTime);
+
+    let schedulesParams: SchedulesRequestParams = {
+        sort: "time",
+        page: {
+            limit: limit ?? 5,
+        },
+        filters: {
+            stop: stopId,
+            route: routeId,
+            min_time: minServiceTime,
+            date: minServiceDay,
+            route_type: [RouteType.HEAVY_RAIL, RouteType.LIGHT_RAIL],
+        },
+        fields: {
+            schedule: ["arrival_time", "departure_time"],
+            trip: ["headsign", "name"],
+        },
+        include: ["trip", "prediction", "route"],
+    };
+
+    let afterSchedulesResponse = await client.fetch(
+        "schedules",
+        schedulesParams,
+    );
+
+    // If there are no results, that means there are no more trips scheduled
+    // for the current service day.
+    // So get a few from the start of the next service day instead.
+    // (Could still be none for the whole day)
+    if (afterSchedulesResponse.length === 0) {
+        schedulesParams = {
+            ...schedulesParams,
+            filters: {
+                ...schedulesParams.filters,
+                min_time: "03:00",
+                date: dayjs(minServiceDay).add(1, "day").format("YYYY-MM-DD"),
+            },
+        };
+        afterSchedulesResponse = await client.fetch(
+            "schedules",
+            schedulesParams,
+        );
+    }
+
+    return afterSchedulesResponse;
 }
 
 /**

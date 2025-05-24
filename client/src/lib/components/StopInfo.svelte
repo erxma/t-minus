@@ -4,23 +4,26 @@
     import Loading from "./common/Loading.svelte";
     import RoutePill from "./common/RoutePill.svelte";
 
-    import { Clock } from "@lucide/svelte";
+    import { CalendarClock, Clock, Radio } from "@lucide/svelte";
     import { fade } from "svelte/transition";
 
-    import { predictionCountdownText } from "$lib/util/formatting";
+    import { countdownText } from "$lib/util/formatting";
     import type {
         PredictionResource,
         RouteResource,
+        ScheduleResource,
         StopResource,
     } from "@t-minus/shared";
 
     interface Props {
         stop: StopResource;
         route: RouteResource;
-        predictions?: readonly Readonly<PredictionResource>[] | Error;
+        arrivals?:
+            | readonly Readonly<PredictionResource | ScheduleResource>[]
+            | Error;
     }
 
-    const { stop, route, predictions }: Props = $props();
+    const { stop, route, arrivals: arrivals }: Props = $props();
 </script>
 
 <div
@@ -35,27 +38,40 @@
             size="24"
         />
     </span>
-    {#if !predictions}
+    {#if !arrivals}
         <Loading />
-    {:else if predictions instanceof Error}
+    {:else if arrivals instanceof Error}
         <p>Failed to get upcoming arrivals.</p>
-    {:else if predictions.length > 0}
+    {:else if arrivals.length > 0}
         <ol in:fade|global>
-            {#each predictions as prediction (prediction.id)}
+            {#each arrivals as arrival (arrival.id)}
                 <li class="arrival">
                     <span class="headsign">
                         <RoutePill
-                            route={prediction.route!}
+                            route={arrival.route!}
                             abbreviate={true}
                             colorUnderneath="var(--surface)"
                             size="var(--font-size-m)"
                         />
-                        {prediction.trip!.headsign}
-                        {#if !prediction.departure_time}(drop-off){/if}
+                        {arrival.trip!.headsign}
+                        {#if !arrival.departure_time}(drop-off){/if}
                     </span>
-                    {#key predictionCountdownText(prediction)}
+                    {#key countdownText(arrival)}
                         <span class="arrival-time" in:fade={{ duration: 800 }}>
-                            {predictionCountdownText(prediction)}
+                            {#if arrival.type === "prediction"}
+                                <span aria-hidden="true" title="Live Prediction"
+                                    ><Radio /></span
+                                >
+                                <span class="visually-hidden"
+                                    >Live prediction</span
+                                >
+                            {:else}
+                                <span aria-hidden="true" title="Scheduled"
+                                    ><CalendarClock /></span
+                                >
+                                <span class="visually-hidden">Scheduled</span>
+                            {/if}
+                            <span>{countdownText(arrival)}</span>
                         </span>
                     {/key}
                 </li>
@@ -118,6 +134,9 @@
     }
 
     .arrival-time {
+        display: inline-flex;
+        justify-content: right;
+        gap: 0.2em;
         text-align: right;
     }
 

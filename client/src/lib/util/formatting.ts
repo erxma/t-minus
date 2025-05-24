@@ -2,6 +2,19 @@ import dayjs from "dayjs";
 import type { PredictionResource, ScheduleResource } from "@t-minus/shared";
 
 /**
+ * For a given prediction or schedule, get the text indicating the time or other status
+ */
+export function countdownText(
+    arrival: PredictionResource | ScheduleResource,
+): string {
+    if (arrival.type === "prediction") {
+        return predictionCountdownText(arrival);
+    } else {
+        return scheduleCountdownText(arrival);
+    }
+}
+
+/**
  * For a given prediction, get the text displaying the time remaining or other status
  */
 export function predictionCountdownText(
@@ -58,43 +71,19 @@ export function predictionCountdownText(
         return `${mins_rounded} min`;
     } else {
         // Otherwise, show the absolute time, e.g. 1:23 PM
-        return referenceTime.format("h:m A");
+        // (Going against recommended practice of "20+ min");
+        return referenceTime.format("h:mm A");
     }
 }
 
+/**
+ * For a given schedule, get the text indicating the time or other status
+ */
 export function scheduleCountdownText(schedule: ScheduleResource): string {
-    // Calculate seconds until vehicle reaches the stop,
-    // based on the arrival time if available, or the departure time otherwise.
+    // Show absolute time - arrival if given, departure otherwise
     const referenceTime = dayjs(
         schedule.arrival_time ?? schedule.departure_time,
     );
 
-    const timeLeftSecs = referenceTime.diff(dayjs(), "seconds");
-
-    // Equivalent minutes, rounded to int
-    const mins_rounded = Math.round(timeLeftSecs / 60);
-
-    if (timeLeftSecs <= 90) {
-        // If seconds <= 90, and the associated vehicle is stopped at the same stop...
-        if (schedule.departure_time) {
-            // And if departure time is given, show "BRD"
-            return "BRD?";
-        } else {
-            // If departure not given, passengers cannot board;
-            // usually occurs for last stop
-            return "Drop-off";
-        }
-    } else if (timeLeftSecs <= 30) {
-        // If less than 30s, show "ARR"
-        return "ARR?";
-    } else if (timeLeftSecs <= 60) {
-        // If less than 60s, show "1 min"
-        return "1 min?";
-    } else if (Math.ceil(timeLeftSecs / 60) > 20) {
-        // If more than 20m, show absolute time instead (different from prediction times)
-        return referenceTime.format("hh:mm A");
-    } else {
-        // Otherwise, show the rounded minutes
-        return `${mins_rounded} min?`;
-    }
+    return referenceTime.format("h:mm A");
 }

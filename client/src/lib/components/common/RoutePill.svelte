@@ -66,9 +66,15 @@
     style:--color-underneath={colorUnderneath}
     style:--size={size}
 >
-    <span class="line" style:background-color="#{route.color ?? '000'}"
+    <!-- Colored background pill with line main name inside -->
+    <!-- Special case for Mattapan "M" - use a circle shape instead -->
+    <span
+        class={["line", lineMainName === "M" && "circle"]}
+        style:background-color="#{route.color ?? '000'}"
         ><b>{lineMainName}</b></span
     >
+    <!-- If there's a branch name, add it in additional shape to the side -->
+    <!-- Fakes carving out the main name shape, using background-color -->
     {#if branch}
         <span class="branch" style:background-color="#{route.color ?? '000'}"
             ><b>{branch}</b></span
@@ -93,6 +99,11 @@
 
     .line {
         padding: 0 0.8em;
+    }
+
+    .line.circle {
+        padding: 0;
+        aspect-ratio: 1/1;
     }
 
     .branch {
