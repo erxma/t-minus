@@ -1,21 +1,26 @@
 <script lang="ts">
     import "$lib/global.css";
 
+    import Header from "$lib/components/Header.svelte";
+    import Loading from "$lib/components/common/Loading.svelte";
+    import RoutePatternSelect from "$lib/components/route/RoutePatternSelect.svelte";
+    import StopList from "$lib/components/route/StopList.svelte";
     import StopInfo from "$lib/components/StopInfo.svelte";
     import { Drawer } from "vaul-svelte";
-    import Header from "$lib/components/Header.svelte";
+    import { fade } from "svelte/transition";
+
     import {
         RouteType,
         type PredictionResource,
         type RouteResource,
         type StopResource,
     } from "@t-minus/shared";
-    import RouteView from "$lib/components/route/RouteView.svelte";
     import { apiClient } from "$lib/components/api-client";
-    import dayjs from "dayjs";
     import { MbtaStreamedCollection } from "$lib/components/collections.svelte";
+    import dayjs from "dayjs";
 
     let selectedRoute: RouteResource | undefined = $state();
+    let selectedDirectionId: number = $state(0);
     let selectedStop: StopResource | undefined = $state();
     // (Can't be $derived because relation with selectedStop is two-way)
     let drawerOpen: boolean = $state(false);
@@ -30,7 +35,7 @@
         // If selecting a stop, open the drawer and start listening for predictions
         if (selectedStop) {
             drawerOpen = true;
-            predictions = getPredictions(selectedStop.id);
+            predictions = streamPredictions(selectedStop.id);
         }
     }
 
@@ -45,7 +50,17 @@
         }
     }
 
-    function getPredictions(
+    async function getRouteOptions(): Promise<RouteResource[]> {
+        const options = await apiClient.fetch("routes", {
+            filters: {
+                type: [RouteType.LIGHT_RAIL, RouteType.HEAVY_RAIL],
+            },
+        });
+        selectedRoute = options[0];
+        return options;
+    }
+
+    function streamPredictions(
         stopId: string,
     ): MbtaStreamedCollection<PredictionResource> {
         const eventSource = apiClient.listen("predictions", {
@@ -84,6 +99,23 @@
             timeAscending,
         );
     }
+
+    async function fetchRouteStops(
+        routeId: string,
+        directionId: number,
+    ): Promise<StopResource[]> {
+        const response = await apiClient.fetch("stops", {
+            filters: {
+                route: routeId,
+                direction_id: directionId,
+            },
+            fields: {
+                stop: ["name", "wheelchair_boarding"],
+            },
+        });
+
+        return response;
+    }
 </script>
 
 <svelte:head>
@@ -108,10 +140,33 @@
 
 <Header />
 <main>
-    <RouteView
-        bind:selectedRoute
-        bind:selectedStop={() => selectedStop, setSelectedStop}
-    />
+    {#await getRouteOptions()}
+        <Loading />
+    {:then routeOptions}
+        <div class="route-view" in:fade>
+            <RoutePatternSelect
+                {routeOptions}
+                bind:selectedRoute={selectedRoute!}
+                bind:selectedDirectionId
+            />
+            {#await fetchRouteStops(selectedRoute!.id, selectedDirectionId)}
+                <Loading />
+            {:then stops}
+                <div class="route-stop-select">
+                    <StopList
+                        route={selectedRoute!}
+                        {stops}
+                        bind:selectedStop={() => selectedStop, setSelectedStop}
+                    />
+                </div>
+            {:catch}
+                <p>Failed to get list of stops on route.</p>
+            {/await}
+        </div>
+    {:catch}
+        <p>Failed to get route options.</p>
+    {/await}
+
     <Drawer.Root
         shouldScaleBackground
         bind:open={() => drawerOpen, setDrawerOpen}
@@ -136,10 +191,23 @@
 
 <style>
     main {
-        margin-top: 32px;
         display: flex;
         flex-direction: column;
         align-items: center;
+    }
+
+    .route-view {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        max-width: 480px;
+        width: 100%;
+    }
+
+    .route-stop-select {
+        display: flex;
+        flex-direction: column;
+        width: 100%;
     }
 
     .drawer-handle {

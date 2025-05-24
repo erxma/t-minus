@@ -1,6 +1,5 @@
 <script lang="ts">
     import AccessibilityIcon from "$lib/components/common/AccessibilityIcon.svelte";
-    import Loading from "$lib/components/common/Loading.svelte";
 
     import type { RouteResource, StopResource } from "@t-minus/shared";
 
@@ -8,7 +7,7 @@
 
     interface Props {
         route: RouteResource;
-        stops: Promise<StopResource[]>;
+        stops: StopResource[];
         selectedStop?: StopResource;
     }
 
@@ -16,38 +15,31 @@
 </script>
 
 <div class="container">
-    {#await stops}
-        <Loading />
-    {:then stops}
-        <div class="route" in:fade>
-            <div
-                class="line-visual"
-                style:--line-color="#{route.color}"
-                aria-hidden="true"
-            ></div>
-            <ol>
-                {#each stops as stop}
-                    <li>
-                        <button
-                            onclick={() => (selectedStop = stop)}
-                            style:--line-color="#{route.color}"
-                        >
-                            <span class="stop-left">
-                                <span class="stop-circle" aria-hidden="true"
-                                ></span>
-                                <span class="stop-name">{stop.name}</span>
-                            </span>
-                            <AccessibilityIcon
-                                wheelchairBoarding={stop.wheelchair_boarding}
-                            />
-                        </button>
-                    </li>
-                {/each}
-            </ol>
-        </div>
-    {:catch}
-        <p>Failed to get route information.</p>
-    {/await}
+    <div class="route" in:fade>
+        <div
+            class="line-visual"
+            style:--line-color="#{route.color}"
+            aria-hidden="true"
+        ></div>
+        <ol>
+            {#each stops as stop}
+                <li>
+                    <button
+                        onclick={() => (selectedStop = stop)}
+                        style:--line-color="#{route.color}"
+                    >
+                        <span class="stop-left">
+                            <span class="stop-circle" aria-hidden="true"></span>
+                            <span class="stop-name">{stop.name}</span>
+                        </span>
+                        <AccessibilityIcon
+                            wheelchairBoarding={stop.wheelchair_boarding}
+                        />
+                    </button>
+                </li>
+            {/each}
+        </ol>
+    </div>
 </div>
 
 <style>
