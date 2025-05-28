@@ -14,8 +14,9 @@
     import dayjs from "dayjs";
     import { page } from "$app/state";
     import type { PageProps } from "./$types";
-    import { replaceState } from "$app/navigation";
+    import { afterNavigate, replaceState } from "$app/navigation";
     import ListViewPage from "./ListViewPage.svelte";
+    import { untrack } from "svelte";
 
     type Arrivals =
         | readonly Readonly<ScheduleResource>[]
@@ -100,19 +101,13 @@
     async function setSelectedRoute(value: RouteResource) {
         selectedRoute = value;
         routeStops = fetchRouteStops(selectedRoute.id, selectedDirectionId);
-
-        const url = new URL(page.url);
-        url.searchParams.set("route", value.id);
-        replaceState(url, {});
+        updateSearchParams();
     }
 
     async function setSelectedDirectionId(value: number) {
         selectedDirectionId = value;
         routeStops = fetchRouteStops(selectedRoute.id, selectedDirectionId);
-
-        const url = new URL(page.url);
-        url.searchParams.set("direction", value.toString());
-        replaceState(url, {});
+        updateSearchParams();
     }
 
     async function setSelectedStop(value?: StopResource) {
@@ -174,6 +169,13 @@
         routeId: string,
     ): Promise<readonly ScheduleResource[]> {
         return await fetchNextSchedules(apiClient, stopId, dayjs(), routeId);
+    }
+
+    function updateSearchParams() {
+        const url = new URL(page.url);
+        url.searchParams.set("route", selectedRoute.id);
+        url.searchParams.set("direction", selectedDirectionId.toString());
+        replaceState(url, {});
     }
 </script>
 
