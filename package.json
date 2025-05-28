@@ -2,13 +2,13 @@
   "name": "t-minus",
   "private": true,
   "workspaces": [
-    "client",
+    "app",
     "server",
     "shared"
   ],
   "scripts": {
-    "dev": "concurrently \"npm run dev:client\" \"npm run dev:server\" \"npm run dev:shared\" -n client,server,shared --prefix-colors auto",
-    "dev:client": "npm run dev --workspace=client",
+    "dev": "concurrently \"npm run dev:app\" \"npm run dev:server\" \"npm run dev:shared\" -n app,server,shared --prefix-colors auto",
+    "dev:app": "npm run dev --workspace=app",
     "dev:server": "npm run dev --workspace=server",
     "dev:shared": "npm run dev --workspace=shared -- --preserveWatchOutput"
   },
