@@ -265,13 +265,15 @@ export class MbtaApiClient {
     public async fetch<Path extends EndpointPath>(
         path: Path,
         params: MbtaApiEndpoints[Path]["requestParams"],
+        fetchFn?: typeof globalThis.fetch,
     ): Promise<MbtaApiEndpoints[Path]["resource"][]> {
         // Build request URL
         const urlParams = buildUrlParams(params);
         const url = `${this.baseUrl}/${path}?${new URLSearchParams(urlParams)}`;
 
         // Make the API call
-        const response = await fetch(url, {
+        fetchFn ??= globalThis.fetch;
+        const response = await fetchFn(url, {
             headers: {
                 ...(this.apiKey && { "X-API-Key": this.apiKey }),
             },

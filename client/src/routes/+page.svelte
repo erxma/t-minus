@@ -20,9 +20,18 @@
     import { apiClient } from "$lib/components/api-client";
     import { MbtaStreamedCollection } from "$lib/components/collections.svelte";
     import dayjs from "dayjs";
+    import { page } from "$app/state";
+    import type { PageProps } from "./$types";
+    import { replaceState } from "$app/navigation";
 
-    let selectedRoute: RouteResource | undefined = $state();
-    let selectedDirectionId: number = $state(0);
+    let { data }: PageProps = $props();
+
+    let selectedRoute: RouteResource = $state(data.initialRoute);
+    let selectedDirectionId: number = $state(data.initialDirection);
+    let routeStops: StopResource[] | Promise<StopResource[]> = $state(
+        data.initialStops,
+    );
+
     let selectedStop: StopResource | undefined = $state();
     // (Can't be $derived because relation with selectedStop is two-way)
     let drawerOpen: boolean = $state(false);
@@ -35,6 +44,15 @@
         | readonly Readonly<ScheduleResource>[]
         | undefined
     > = $derived(getStopArrivals());
+
+    async function setSelectedRoute(value: RouteResource) {
+        selectedRoute = value;
+        routeStops = fetchRouteStops(selectedRoute.id, selectedDirectionId);
+
+        const url = new URL(page.url);
+        url.searchParams.set("route", value.id);
+        replaceState(url, {});
+    }
 
     function setSelectedStop(value?: StopResource) {
         // Set value
@@ -55,16 +73,6 @@
             predictions?.close();
             predictions = undefined;
         }
-    }
-
-    async function getRouteOptions(): Promise<RouteResource[]> {
-        const options = await apiClient.fetch("routes", {
-            filters: {
-                type: [RouteType.LIGHT_RAIL, RouteType.HEAVY_RAIL],
-            },
-        });
-        selectedRoute = options[0];
-        return options;
     }
 
     function streamPredictions(
@@ -164,32 +172,26 @@
 
 <Header />
 <main>
-    {#await getRouteOptions()}
-        <Loading />
-    {:then routeOptions}
-        <div class="route-view" in:fade>
-            <RoutePatternSelect
-                {routeOptions}
-                bind:selectedRoute={selectedRoute!}
-                bind:selectedDirectionId
-            />
-            {#await fetchRouteStops(selectedRoute!.id, selectedDirectionId)}
-                <Loading />
-            {:then stops}
-                <div class="route-stop-select">
-                    <StopList
-                        route={selectedRoute!}
-                        {stops}
-                        bind:selectedStop={() => selectedStop, setSelectedStop}
-                    />
-                </div>
-            {:catch}
-                <p>Failed to get list of stops on route.</p>
-            {/await}
-        </div>
-    {:catch}
-        <p>Failed to get route options.</p>
-    {/await}
+    <div class="route-view" in:fade>
+        <RoutePatternSelect
+            routeOptions={data.routeOptions}
+            bind:selectedRoute={() => selectedRoute, setSelectedRoute}
+            bind:selectedDirectionId
+        />
+        {#await routeStops}
+            <Loading />
+        {:then stops}
+            <div class="route-stop-select" in:fade>
+                <StopList
+                    route={selectedRoute}
+                    {stops}
+                    onSelectStop={setSelectedStop}
+                />
+            </div>
+        {:catch}
+            <p>Failed to get list of stops on route.</p>
+        {/await}
+    </div>
 
     <Drawer.Root
         shouldScaleBackground
@@ -206,12 +208,12 @@
                     <!-- Get list of expected arrivals (a reactive Promise, see above) -->
                     {#await arrivals}
                         <!-- Before arrivals are available, show with none -->
-                        <StopInfo stop={selectedStop} route={selectedRoute!} />
+                        <StopInfo stop={selectedStop} route={selectedRoute} />
                     {:then arrivals}
                         <!-- Show with the arrivals -->
                         <StopInfo
                             stop={selectedStop}
-                            route={selectedRoute!}
+                            route={selectedRoute}
                             {arrivals}
                         />
                     {/await}

@@ -3,54 +3,43 @@
 
     import type { RouteResource, StopResource } from "@t-minus/shared";
 
-    import { fade } from "svelte/transition";
-
     interface Props {
         route: RouteResource;
         stops: StopResource[];
-        selectedStop?: StopResource;
+        onSelectStop: (stop: StopResource) => void;
     }
 
-    let { route, stops, selectedStop = $bindable() }: Props = $props();
+    let { route, stops, onSelectStop }: Props = $props();
 </script>
 
-<div class="container">
-    <div class="route" in:fade>
-        <div
-            class="line-visual"
-            style:--line-color="#{route.color}"
-            aria-hidden="true"
-        ></div>
-        <ol>
-            {#each stops as stop}
-                <li>
-                    <button
-                        onclick={() => (selectedStop = stop)}
-                        style:--line-color="#{route.color}"
-                    >
-                        <span class="stop-left">
-                            <span class="stop-circle" aria-hidden="true"></span>
-                            <span class="stop-name">{stop.name}</span>
-                        </span>
-                        <AccessibilityIcon
-                            wheelchairBoarding={stop.wheelchair_boarding}
-                        />
-                    </button>
-                </li>
-            {/each}
-        </ol>
-    </div>
+<div class="stop-list">
+    <div
+        class="line-visual"
+        style:--line-color="#{route.color}"
+        aria-hidden="true"
+    ></div>
+    <ol>
+        {#each stops as stop}
+            <li>
+                <button
+                    onclick={() => onSelectStop(stop)}
+                    style:--line-color="#{route.color}"
+                >
+                    <span class="stop-left">
+                        <span class="stop-circle" aria-hidden="true"></span>
+                        <span class="stop-name">{stop.name}</span>
+                    </span>
+                    <AccessibilityIcon
+                        wheelchairBoarding={stop.wheelchair_boarding}
+                    />
+                </button>
+            </li>
+        {/each}
+    </ol>
 </div>
 
 <style>
-    .container {
-        display: flex;
-        flex-direction: column;
-        align-items: center;
-        gap: 16px;
-    }
-
-    .route {
+    .stop-list {
         display: flex;
         flex-direction: column;
         align-items: flex-start;
