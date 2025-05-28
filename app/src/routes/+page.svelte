@@ -54,6 +54,15 @@
         replaceState(url, {});
     }
 
+    async function setSelectedDirectionId(value: number) {
+        selectedDirectionId = value;
+        routeStops = fetchRouteStops(selectedRoute.id, selectedDirectionId);
+
+        const url = new URL(page.url);
+        url.searchParams.set("direction", value.toString());
+        replaceState(url, {});
+    }
+
     function setSelectedStop(value?: StopResource) {
         // Set value
         selectedStop = value;
@@ -176,7 +185,9 @@
         <RoutePatternSelect
             routeOptions={data.routeOptions}
             bind:selectedRoute={() => selectedRoute, setSelectedRoute}
-            bind:selectedDirectionId
+            bind:selectedDirectionId={
+                () => selectedDirectionId, setSelectedDirectionId
+            }
         />
         {#await routeStops}
             <Loading />
