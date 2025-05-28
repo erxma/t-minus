@@ -155,7 +155,7 @@
     <script>
         // Initialize theme:
         // Look for existing stored theme preference
-        let theme = localStorage.getItem("theme");
+        var theme = localStorage.getItem("theme");
         // If none, default to media query result
         if (!theme) {
             theme = window.matchMedia("(prefers-color-scheme: dark)").matches
