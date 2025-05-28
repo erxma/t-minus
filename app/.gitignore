@@ -23,6 +23,7 @@ node_modules
 .output
 /.svelte-kit
 /build
+/.netlify
 
 # OS
 .DS_Store
