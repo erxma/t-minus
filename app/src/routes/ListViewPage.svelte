@@ -93,7 +93,7 @@
                 >
                 <!-- If there's a selected stop (there should be when drawer is open) -->
                 {#if selectedStop}
-                    <!-- Get list of expected arrivals (a reactive Promise, see above) -->
+                    <!-- Get list of expected arrivals -->
                     {#await arrivals}
                         <!-- Before arrivals are available, show with none -->
                         <StopInfo stop={selectedStop} route={selectedRoute} />

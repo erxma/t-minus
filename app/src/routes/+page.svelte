@@ -17,6 +17,10 @@
     import { replaceState } from "$app/navigation";
     import ListViewPage from "./ListViewPage.svelte";
 
+    type Arrivals =
+        | readonly Readonly<ScheduleResource>[]
+        | readonly Readonly<PredictionResource>[];
+
     let { data }: PageProps = $props();
 
     let selectedRoute: RouteResource = $state(data.initialRoute);
@@ -27,14 +31,71 @@
 
     let selectedStop: StopResource | undefined = $state();
 
-    // (Can't be $derived because collection itself needs to be watched for changes)
-    let predictions: MbtaStreamedCollection<PredictionResource> | undefined =
-        $state();
-    let arrivals: Promise<
-        | readonly Readonly<PredictionResource>[]
-        | readonly Readonly<ScheduleResource>[]
-        | undefined
-    > = $derived(getStopArrivals());
+    let streamedPredictions:
+        | MbtaStreamedCollection<PredictionResource>
+        | undefined = $state();
+    const streamedArrivals: Promise<Arrivals> | undefined = $derived.by(() => {
+        if (!streamedPredictions?.data) {
+            return undefined;
+        }
+
+        if (streamedPredictions.data.length > 0) {
+            return Promise.resolve(streamedPredictions.data);
+        } else {
+            return fetchStopSchedules(selectedStop!.id, selectedRoute.id);
+        }
+    });
+    let polledArrivals: Arrivals | undefined = $state();
+    const arrivals = $derived(
+        streamedArrivals ?? Promise.resolve(polledArrivals),
+    );
+
+    const predictionsFetchParams = $derived({
+        sort: "time",
+        page: {
+            limit: 10,
+        },
+        fields: {
+            prediction: [
+                "arrival_time",
+                "departure_time",
+                "status",
+                "stop_sequence",
+                "update_type",
+            ],
+        },
+        filters: {
+            stop: selectedStop?.id,
+            route_type: [RouteType.HEAVY_RAIL, RouteType.LIGHT_RAIL],
+        },
+        include: ["route", "vehicle", "trip"],
+    });
+
+    // If polling...
+    if (import.meta.env.VITE_LIVE_UPDATE_METHOD === "poll") {
+        $effect(() => {
+            if (selectedStop) {
+                const pollInterval = setInterval(
+                    async () => {
+                        const predictions = await apiClient.fetch(
+                            "predictions",
+                            predictionsFetchParams,
+                        );
+                        if (predictions.length > 0) {
+                            polledArrivals = predictions;
+                        } else {
+                            polledArrivals = await fetchStopSchedules(
+                                selectedStop!.id,
+                                selectedRoute.id,
+                            );
+                        }
+                    },
+                    import.meta.env.VITE_POLL_INTERVAL_MS,
+                );
+                return () => clearInterval(pollInterval);
+            }
+        });
+    }
 
     async function setSelectedRoute(value: RouteResource) {
         selectedRoute = value;
@@ -54,53 +115,41 @@
         replaceState(url, {});
     }
 
-    function setSelectedStop(value?: StopResource) {
-        // Set value
+    async function setSelectedStop(value?: StopResource) {
         selectedStop = value;
-        // If selecting a stop, open the drawer and start listening for predictions
-        if (selectedStop) {
-            predictions = streamPredictions(selectedStop.id);
+
+        // If streaming is on...
+        if (import.meta.env.VITE_LIVE_UPDATE_METHOD === "stream") {
+            // If a stop was selected, start listening to predictions
+            if (selectedStop) {
+                const eventSource = apiClient.listen(
+                    "predictions",
+                    predictionsFetchParams,
+                );
+
+                window.addEventListener("beforeunload", () => {
+                    eventSource.close();
+                });
+
+                const timeAscending = (
+                    a: PredictionResource,
+                    b: PredictionResource,
+                ) =>
+                    dayjs(a.arrival_time ?? b.departure_time).diff(
+                        b.arrival_time ?? b.departure_time,
+                    );
+
+                streamedPredictions = new MbtaStreamedCollection(
+                    "prediction",
+                    eventSource,
+                    timeAscending,
+                );
+            } else if (streamedPredictions) {
+                // If deselecting, stop listening
+                streamedPredictions.close();
+                streamedPredictions = undefined;
+            }
         }
-    }
-
-    function streamPredictions(
-        stopId: string,
-    ): MbtaStreamedCollection<PredictionResource> {
-        const eventSource = apiClient.listen("predictions", {
-            sort: "time",
-            page: {
-                limit: 10,
-            },
-            fields: {
-                prediction: [
-                    "arrival_time",
-                    "departure_time",
-                    "status",
-                    "stop_sequence",
-                    "update_type",
-                ],
-            },
-            filters: {
-                stop: stopId,
-                route_type: [RouteType.HEAVY_RAIL, RouteType.LIGHT_RAIL],
-            },
-            include: ["route", "vehicle", "trip"],
-        });
-
-        window.addEventListener("beforeunload", () => {
-            eventSource.close();
-        });
-
-        const timeAscending = (a: PredictionResource, b: PredictionResource) =>
-            dayjs(a.arrival_time ?? b.departure_time).diff(
-                b.arrival_time ?? b.departure_time,
-            );
-
-        return new MbtaStreamedCollection(
-            "prediction",
-            eventSource,
-            timeAscending,
-        );
     }
 
     async function fetchRouteStops(
@@ -120,21 +169,11 @@
         return response;
     }
 
-    async function getStopArrivals() {
-        if (!selectedRoute || !selectedStop || !predictions?.data) {
-            return undefined;
-        }
-
-        if (predictions.data.length > 0) {
-            return predictions.data;
-        } else {
-            return await fetchNextSchedules(
-                apiClient,
-                selectedStop.id,
-                dayjs(),
-                selectedRoute.id,
-            );
-        }
+    async function fetchStopSchedules(
+        stopId: string,
+        routeId: string,
+    ): Promise<readonly ScheduleResource[]> {
+        return await fetchNextSchedules(apiClient, stopId, dayjs(), routeId);
     }
 </script>
 

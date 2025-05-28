@@ -96,6 +96,7 @@ export async function fetchNextSchedules(
     minTime: Readonly<Dayjs>,
     routeId?: string,
     limit?: number,
+    fetch?: typeof globalThis.fetch,
 ): Promise<readonly Readonly<ScheduleResource>[]> {
     const [minServiceDay, minServiceTime] = serviceDayAndTime(minTime);
 
@@ -121,6 +122,7 @@ export async function fetchNextSchedules(
     let afterSchedulesResponse = await client.fetch(
         "schedules",
         schedulesParams,
+        fetch,
     );
 
     // If there are no results, that means there are no more trips scheduled
@@ -139,6 +141,7 @@ export async function fetchNextSchedules(
         afterSchedulesResponse = await client.fetch(
             "schedules",
             schedulesParams,
+            fetch,
         );
     }
 
