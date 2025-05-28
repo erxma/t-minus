@@ -18,8 +18,8 @@
     }
   },
   "scripts": {
-    "build": "tsc -b",
-    "watch": "tsc -b --watch"
+    "dev": "tsc -b --watch",
+    "build": "tsc -b"
   },
   "devDependencies": {
     "prettier": "^3.5.3",
