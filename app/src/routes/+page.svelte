@@ -1,14 +1,6 @@
 <script lang="ts">
     import "$lib/global.css";
 
-    import Header from "$lib/components/Header.svelte";
-    import Loading from "$lib/components/common/Loading.svelte";
-    import RoutePatternSelect from "$lib/components/route/RoutePatternSelect.svelte";
-    import StopList from "$lib/components/route/StopList.svelte";
-    import StopInfo from "$lib/components/StopInfo.svelte";
-    import { Drawer } from "vaul-svelte";
-    import { fade } from "svelte/transition";
-
     import {
         fetchNextSchedules,
         RouteType,
@@ -23,6 +15,7 @@
     import { page } from "$app/state";
     import type { PageProps } from "./$types";
     import { replaceState } from "$app/navigation";
+    import ListViewPage from "./ListViewPage.svelte";
 
     let { data }: PageProps = $props();
 
@@ -33,8 +26,6 @@
     );
 
     let selectedStop: StopResource | undefined = $state();
-    // (Can't be $derived because relation with selectedStop is two-way)
-    let drawerOpen: boolean = $state(false);
 
     // (Can't be $derived because collection itself needs to be watched for changes)
     let predictions: MbtaStreamedCollection<PredictionResource> | undefined =
@@ -68,19 +59,7 @@
         selectedStop = value;
         // If selecting a stop, open the drawer and start listening for predictions
         if (selectedStop) {
-            drawerOpen = true;
             predictions = streamPredictions(selectedStop.id);
-        }
-    }
-
-    function setDrawerOpen(value: boolean) {
-        // Set value
-        drawerOpen = value;
-        // If closing drawer, deselect stop and stop listening for predictions
-        if (!drawerOpen) {
-            selectedStop = undefined;
-            predictions?.close();
-            predictions = undefined;
         }
     }
 
@@ -179,88 +158,11 @@
     </script>
 </svelte:head>
 
-<Header />
-<main>
-    <div class="route-view" in:fade>
-        <RoutePatternSelect
-            routeOptions={data.routeOptions}
-            bind:selectedRoute={() => selectedRoute, setSelectedRoute}
-            bind:selectedDirectionId={
-                () => selectedDirectionId, setSelectedDirectionId
-            }
-        />
-        {#await routeStops}
-            <Loading />
-        {:then stops}
-            <div class="route-stop-select" in:fade>
-                <StopList
-                    route={selectedRoute}
-                    {stops}
-                    onSelectStop={setSelectedStop}
-                />
-            </div>
-        {:catch}
-            <p>Failed to get list of stops on route.</p>
-        {/await}
-    </div>
-
-    <Drawer.Root
-        shouldScaleBackground
-        bind:open={() => drawerOpen, setDrawerOpen}
-    >
-        <Drawer.Portal>
-            <Drawer.Overlay class="drawer-overlay-default" />
-            <Drawer.Content class="drawer-content-default">
-                <Drawer.Close class="drawer-close-default"
-                    ><div class="drawer-handle"></div></Drawer.Close
-                >
-                <!-- If there's a selected stop (there should be when drawer is open) -->
-                {#if selectedStop}
-                    <!-- Get list of expected arrivals (a reactive Promise, see above) -->
-                    {#await arrivals}
-                        <!-- Before arrivals are available, show with none -->
-                        <StopInfo stop={selectedStop} route={selectedRoute} />
-                    {:then arrivals}
-                        <!-- Show with the arrivals -->
-                        <StopInfo
-                            stop={selectedStop}
-                            route={selectedRoute}
-                            {arrivals}
-                        />
-                    {/await}
-                {/if}
-            </Drawer.Content>
-        </Drawer.Portal>
-    </Drawer.Root>
-</main>
-
-<style>
-    main {
-        display: flex;
-        flex-direction: column;
-        align-items: center;
-    }
-
-    .route-view {
-        display: flex;
-        flex-direction: column;
-        align-items: center;
-        max-width: 480px;
-        width: 100%;
-    }
-
-    .route-stop-select {
-        display: flex;
-        flex-direction: column;
-        width: 100%;
-    }
-
-    .drawer-handle {
-        border-radius: calc(infinity * 1px);
-        border: none;
-        background-color: var(--fg-primary);
-        height: 8px;
-        width: 48px;
-        margin: 4px 0;
-    }
-</style>
+<ListViewPage
+    routeOptions={data.routeOptions}
+    bind:selectedRoute={() => selectedRoute, setSelectedRoute}
+    bind:selectedDirectionId={() => selectedDirectionId, setSelectedDirectionId}
+    {routeStops}
+    bind:selectedStop={() => selectedStop, setSelectedStop}
+    {arrivals}
+/>
