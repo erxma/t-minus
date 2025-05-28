@@ -13,7 +13,7 @@ export const load: PageLoad = async ({ url, fetch }) => {
         routeOptions = await fetchRouteOptions(fetch);
     } else {
         // Server-side: use cache
-        const { TTL_CACHE } = await import("$lib/server/cache");
+        const { TTL_CACHE } = await import("$lib/util/cache");
         const cached = TTL_CACHE.get("route-options");
         if (cached) {
             routeOptions = cached as RouteResource[];
