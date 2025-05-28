@@ -1,18 +1,29 @@
 import { apiClient } from "$lib/components/api-client.js";
-import { RouteType } from "@t-minus/shared";
+import { RouteType, type RouteResource } from "@t-minus/shared";
 import type { PageLoad } from "./$types";
 import { redirect } from "@sveltejs/kit";
+import { browser } from "$app/environment";
+
+const ROUTE_OPTIONS_CACHE_TTL = 60 * 60 * 1000; // 1 hour
 
 export const load: PageLoad = async ({ url, fetch }) => {
-    const routeOptions = await apiClient.fetch(
-        "routes",
-        {
-            filters: {
-                type: [RouteType.LIGHT_RAIL, RouteType.HEAVY_RAIL],
-            },
-        },
-        fetch,
-    );
+    let routeOptions: RouteResource[];
+    if (browser) {
+        // Client-side: always fetch fresh
+        routeOptions = await fetchRouteOptions(fetch);
+    } else {
+        // Server-side: use cache
+        const { TTL_CACHE } = await import("$lib/server/cache");
+        const cached = TTL_CACHE.get("route-options");
+        if (cached) {
+            routeOptions = cached as RouteResource[];
+        } else {
+            routeOptions = await fetchRouteOptions(fetch);
+            TTL_CACHE.set("route-options", routeOptions, {
+                ttl: ROUTE_OPTIONS_CACHE_TTL,
+            });
+        }
+    }
 
     let routeParam = url.searchParams.get("route");
     let directionParam = url.searchParams.get("direction");
@@ -53,3 +64,17 @@ export const load: PageLoad = async ({ url, fetch }) => {
         initialStops,
     };
 };
+
+async function fetchRouteOptions(
+    fetch: typeof globalThis.fetch,
+): Promise<RouteResource[]> {
+    return await apiClient.fetch(
+        "routes",
+        {
+            filters: {
+                type: [RouteType.LIGHT_RAIL, RouteType.HEAVY_RAIL],
+            },
+        },
+        fetch,
+    );
+}
