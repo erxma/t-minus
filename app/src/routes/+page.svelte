@@ -68,7 +68,7 @@
             stop: selectedStop?.id,
             route_type: [RouteType.HEAVY_RAIL, RouteType.LIGHT_RAIL],
         },
-        include: ["route", "vehicle", "trip"],
+        include: ["route", "vehicle", "trip", "stop"],
     });
 
     // If polling...

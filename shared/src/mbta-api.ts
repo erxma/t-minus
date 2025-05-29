@@ -151,7 +151,8 @@ export interface StopResource {
     type: "stop";
     id: string;
 
-    wheelchair_boarding?: 0 | 1 | 2;
+    wheelchair_boarding?: WheelchairAccessibility;
+    platform_name?: string | null;
     name?: string;
     parent_station?: StopResource;
 }

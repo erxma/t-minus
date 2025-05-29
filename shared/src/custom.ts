@@ -116,7 +116,7 @@ export async function fetchNextSchedules(
             schedule: ["arrival_time", "departure_time"],
             trip: ["headsign", "name"],
         },
-        include: ["trip", "prediction", "route"],
+        include: ["trip", "prediction", "route", "stop"],
     };
 
     let afterSchedulesResponse = await client.fetch(
@@ -146,6 +146,23 @@ export async function fetchNextSchedules(
     }
 
     return afterSchedulesResponse;
+}
+
+export function groupArrivalsByPlatform(
+    arrivals: readonly (PredictionResource | ScheduleResource)[],
+) {
+    const groups: Record<string, (PredictionResource | ScheduleResource)[]> =
+        {};
+
+    for (const arrival of arrivals) {
+        const platformName = arrival.stop?.platform_name!;
+        if (!(platformName in groups)) {
+            groups[platformName] = [];
+        }
+        groups[platformName].push(arrival);
+    }
+
+    return groups;
 }
 
 /**
