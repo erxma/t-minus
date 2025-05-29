@@ -28,6 +28,14 @@
     user-select: none;
 }
 
+.select-trigger-pattern {
+    padding: 0;   
+}
+
+.select-item-pattern {
+    font-size: var(--font-size-l);
+}
+
 [data-select-item][data-highlighted] {
     outline: 2px solid var(--fg-primary);
 }

@@ -11,6 +11,7 @@
 
     import {
         type PredictionResource,
+        type RoutePatternResource,
         type RouteResource,
         type ScheduleResource,
         type StopResource,
@@ -20,6 +21,7 @@
         routeOptions: RouteResource[];
         selectedRoute: RouteResource;
         selectedDirectionId: number;
+        selectedRoutePattern: RoutePatternResource;
         routeStops: StopResource[] | Promise<StopResource[]>;
         selectedStop: StopResource | undefined;
         arrivals: Promise<
@@ -33,6 +35,7 @@
         routeOptions,
         selectedRoute = $bindable(),
         selectedDirectionId = $bindable(),
+        selectedRoutePattern = $bindable(),
         routeStops,
         selectedStop = $bindable(),
         arrivals,
@@ -65,6 +68,7 @@
             {routeOptions}
             bind:selectedRoute
             bind:selectedDirectionId
+            bind:selectedRoutePattern
         />
         {#await routeStops}
             <Loading />

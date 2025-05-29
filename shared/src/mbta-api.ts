@@ -37,6 +37,17 @@ export interface RoutesRequestParams extends CollectionRequestParams {
     };
 }
 
+export interface RoutePatternsRequestParams extends CollectionRequestParams {
+    filters?: {
+        id?: string | string[];
+        route?: string | string[];
+        direction_id?: 0 | 1;
+        stop?: string | string[];
+        canonical?: boolean;
+        date?: string | string[];
+    };
+}
+
 export interface SchedulesRequestParams extends CollectionRequestParams {
     filters?: {
         date?: string | string[];
@@ -47,6 +58,17 @@ export interface SchedulesRequestParams extends CollectionRequestParams {
         stop?: string | string[];
         trip?: string | string[];
         stop_sequence?: number | number[] | string | string[];
+    };
+}
+
+export interface TripsRequestParams extends CollectionRequestParams {
+    filters?: {
+        direction_id?: 0 | 1;
+        route?: string | string[];
+        revenue?: RevenueStatus | RevenueStatus[];
+        route_pattern?: string | string[];
+        id?: string | string[];
+        name?: string | string[];
     };
 }
 
@@ -100,6 +122,9 @@ export interface RouteResource {
     direction_destinations?: string[];
     description?: string;
     color?: string;
+
+    // Relationships
+    route_patterns?: RoutePatternResource[] | null;
 }
 
 export enum RouteType {
@@ -109,6 +134,33 @@ export enum RouteType {
     BUS = 3,
     FERRY = 4,
 }
+
+export interface RoutePatternResource {
+    type: "route_pattern";
+    id: string;
+
+    // Attributes
+    typicality?: Typicality;
+    time_desc?: string;
+    sort_order?: number;
+    name?: string;
+    direction_id?: 0 | 1;
+    canonical?: boolean;
+
+    // Relationships
+    route?: RouteResource | null;
+    representative_trip?: TripResource | null;
+}
+
+export const Typicality = {
+    NOT_DEFINED: 0,
+    TYPICAL: 1,
+    DEVIATION: 2,
+    HIGHLY_ATYPICAL: 3,
+    DIVERSION: 4,
+    CANONICAL: 5,
+};
+export type Typicality = (typeof Typicality)[keyof typeof Typicality];
 
 export interface ScheduleResource {
     type: "schedule";
@@ -172,6 +224,10 @@ export interface TripResource {
 
     // Relationships
     route?: RouteResource | null;
+    vehicle?: VehicleResource | null;
+    route_pattern?: RoutePatternResource | null;
+    predictions?: PredictionResource | null;
+    stops?: StopResource[] | null;
 }
 
 export const WheelchairAccessibility = {
@@ -235,7 +291,12 @@ type MbtaApiEndpoints = {
     stops: MbtaApiEndpoint<StopsRequestParams, StopResource>;
     predictions: MbtaApiEndpoint<PredictionsRequestParams, PredictionResource>;
     routes: MbtaApiEndpoint<RoutesRequestParams, RouteResource>;
+    route_patterns: MbtaApiEndpoint<
+        RoutePatternsRequestParams,
+        RoutePatternResource
+    >;
     schedules: MbtaApiEndpoint<SchedulesRequestParams, ScheduleResource>;
+    trips: MbtaApiEndpoint<TripsRequestParams, TripResource>;
 };
 
 type EndpointPath = keyof MbtaApiEndpoints;

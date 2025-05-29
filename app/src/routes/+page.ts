@@ -27,20 +27,30 @@ export const load: PageLoad = async ({ url, fetch }) => {
 
     let routeParam = url.searchParams.get("route");
     let directionParam = url.searchParams.get("direction");
+    let patternParam = url.searchParams.get("pattern");
 
     const initialRoute = routeOptions.find((r) => r.id === routeParam);
+    // If route param is unset, or not an option
+    if (!initialRoute) {
+        // Redirect with route defaulted to first option
+        const newURL = new URL(url);
+        newURL.searchParams.set("route", routeOptions[0].id);
+        redirect(307, newURL);
+    }
+
     let initialDirection = Number(directionParam);
+    // If direction is anything other than 0 or 1, default to 0
     if (initialDirection !== 0 && initialDirection !== 1) {
         initialDirection = 0;
     }
 
-    // If route param is unset, redirect with new params:
-    if (!initialRoute) {
-        const newURL = new URL(url);
-        // If route is specified and present, keep it; otherwise default to first option
-        newURL.searchParams.set("route", routeOptions[0].id);
-        // Throw redirect
-        redirect(307, newURL);
+    let initialPattern = initialRoute.route_patterns?.find(
+        (pattern) => pattern.id === patternParam,
+    );
+    // If route pattern param is unset, or not an option
+    if (!initialPattern) {
+        // Default to first option
+        initialPattern = initialRoute.route_patterns![0];
     }
 
     const initialStops = await apiClient.fetch(
@@ -61,6 +71,7 @@ export const load: PageLoad = async ({ url, fetch }) => {
         routeOptions,
         initialRoute,
         initialDirection,
+        initialPattern,
         initialStops,
     };
 };
@@ -68,13 +79,50 @@ export const load: PageLoad = async ({ url, fetch }) => {
 async function fetchRouteOptions(
     fetch: typeof globalThis.fetch,
 ): Promise<RouteResource[]> {
-    return await apiClient.fetch(
+    const routes = await apiClient.fetch(
         "routes",
         {
             filters: {
                 type: [RouteType.LIGHT_RAIL, RouteType.HEAVY_RAIL],
             },
+            fields: {
+                route: [
+                    "color",
+                    "direction_destinations",
+                    "direction_names",
+                    "long_name",
+                    "short-name",
+                ],
+            },
+            include: ["route_patterns"],
         },
         fetch,
     );
+
+    // Current JSON:API flattening doesn't recurse, to avoid include loops,
+    // so fetch route patterns with representative trips separately here.
+    // This happens to be a good opportunity to filter by canonical
+    const routePatterns = await apiClient.fetch(
+        "route_patterns",
+        {
+            filters: {
+                route: routes.map((r) => r.id),
+                canonical: true,
+            },
+            fields: {
+                route_pattern: ["direction_id", "name", "sort_order"],
+            },
+            include: ["representative_trip"],
+        },
+        fetch,
+    );
+
+    // TODO: Maybe add a JSON:API helper for something like this
+    for (const route of routes) {
+        route.route_patterns = routePatterns.filter(
+            (p) => p.route?.id === route.id,
+        );
+    }
+
+    return routes;
 }

@@ -5,6 +5,7 @@
         fetchNextSchedules,
         RouteType,
         type PredictionResource,
+        type RoutePatternResource,
         type RouteResource,
         type ScheduleResource,
         type StopResource,
@@ -25,6 +26,9 @@
 
     let selectedRoute: RouteResource = $state(data.initialRoute);
     let selectedDirectionId: number = $state(data.initialDirection);
+    let selectedRoutePattern: RoutePatternResource = $state(
+        data.initialPattern,
+    );
     let routeStops: StopResource[] | Promise<StopResource[]> = $state(
         data.initialStops,
     );
@@ -99,13 +103,19 @@
 
     async function setSelectedRoute(value: RouteResource) {
         selectedRoute = value;
-        routeStops = fetchRouteStops(selectedRoute.id, selectedDirectionId);
+        routeStops = fetchPatternStops(selectedRoutePattern);
         updateSearchParams();
     }
 
     async function setSelectedDirectionId(value: number) {
         selectedDirectionId = value;
-        routeStops = fetchRouteStops(selectedRoute.id, selectedDirectionId);
+        routeStops = fetchPatternStops(selectedRoutePattern);
+        updateSearchParams();
+    }
+
+    async function setSelectedRoutePattern(value: RoutePatternResource) {
+        selectedRoutePattern = value;
+        routeStops = fetchPatternStops(selectedRoutePattern);
         updateSearchParams();
     }
 
@@ -146,21 +156,20 @@
         }
     }
 
-    async function fetchRouteStops(
-        routeId: string,
-        directionId: number,
+    async function fetchPatternStops(
+        routePattern: RoutePatternResource,
     ): Promise<StopResource[]> {
-        const response = await apiClient.fetch("stops", {
+        const response = await apiClient.fetch("trips", {
             filters: {
-                route: routeId,
-                direction_id: directionId,
+                id: routePattern.representative_trip!.id,
             },
             fields: {
-                stop: ["name", "wheelchair_boarding"],
+                trip: [],
             },
+            include: ["stops"],
         });
 
-        return response;
+        return response[0].stops!;
     }
 
     async function fetchStopSchedules(
@@ -174,6 +183,7 @@
         const url = new URL(page.url);
         url.searchParams.set("route", selectedRoute.id);
         url.searchParams.set("direction", selectedDirectionId.toString());
+        url.searchParams.set("pattern", selectedRoutePattern.id);
         replaceState(url, {});
     }
 </script>
@@ -202,6 +212,9 @@
     routeOptions={data.routeOptions}
     bind:selectedRoute={() => selectedRoute, setSelectedRoute}
     bind:selectedDirectionId={() => selectedDirectionId, setSelectedDirectionId}
+    bind:selectedRoutePattern={
+        () => selectedRoutePattern, setSelectedRoutePattern
+    }
     {routeStops}
     bind:selectedStop={() => selectedStop, setSelectedStop}
     {arrivals}
