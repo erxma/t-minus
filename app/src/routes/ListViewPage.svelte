@@ -1,7 +1,6 @@
 <script lang="ts">
     import "$lib/global.css";
 
-    import Header from "$lib/components/Header.svelte";
     import Loading from "$lib/components/common/Loading.svelte";
     import RoutePatternSelect from "$lib/components/route/RoutePatternSelect.svelte";
     import StopList from "$lib/components/route/StopList.svelte";
@@ -61,7 +60,6 @@
     }
 </script>
 
-<Header />
 <main>
     <div class="route-view" in:fade>
         <RoutePatternSelect
