@@ -9,7 +9,7 @@
     align-items: center;
     padding: 8px;
     max-height: 300px;
-    overflow-y: auto;
+    overflow-y: scroll;
     z-index: var(--z-index-overlay);
 
     background-color: var(--bg-primary);
@@ -22,7 +22,8 @@
     display: flex;
     justify-content: center;
     width: 100%;
-    padding: 6px 0;
+    padding: 6px;
+    box-sizing: border-box;
     border-radius: var(--border-radius);
     user-select: none;
 }
