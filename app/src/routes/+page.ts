@@ -1,29 +1,11 @@
-import { apiClient } from "$lib/util/api-client.js";
-import { RouteType, type RouteResource } from "@t-minus/shared";
+import type { RouteResource } from "@t-minus/shared";
 import type { PageLoad } from "./$types";
 import { redirect } from "@sveltejs/kit";
-import { browser } from "$app/environment";
-
-const ROUTE_OPTIONS_CACHE_TTL = 60 * 60 * 1000; // 1 hour
 
 export const load: PageLoad = async ({ url, fetch }) => {
-    let routeOptions: RouteResource[];
-    if (browser) {
-        // Client-side: always fetch fresh
-        routeOptions = await fetchRouteOptions(fetch);
-    } else {
-        // Server-side: use cache
-        const { TTL_CACHE } = await import("$lib/util/cache");
-        const cached = TTL_CACHE.get("route-options");
-        if (cached) {
-            routeOptions = cached as RouteResource[];
-        } else {
-            routeOptions = await fetchRouteOptions(fetch);
-            TTL_CACHE.set("route-options", routeOptions, {
-                ttl: ROUTE_OPTIONS_CACHE_TTL,
-            });
-        }
-    }
+    let routeOptions: RouteResource[] = await fetch("/api/route-options").then(
+        (r) => r.json(),
+    );
 
     let routeParam = url.searchParams.get("route");
     let directionParam = url.searchParams.get("direction");
@@ -53,19 +35,9 @@ export const load: PageLoad = async ({ url, fetch }) => {
         initialPattern = initialRoute.route_patterns![0];
     }
 
-    const initialStops = await apiClient.fetch(
-        "stops",
-        {
-            filters: {
-                route: routeParam!,
-                direction_id: initialDirection,
-            },
-            fields: {
-                stop: ["name", "wheelchair_boarding"],
-            },
-        },
-        fetch,
-    );
+    const initialStops = await fetch(
+        `/api/trip-stops?trip=${initialPattern.representative_trip?.id}`,
+    ).then((r) => r.json());
 
     return {
         routeOptions,
@@ -75,54 +47,3 @@ export const load: PageLoad = async ({ url, fetch }) => {
         initialStops,
     };
 };
-
-async function fetchRouteOptions(
-    fetch: typeof globalThis.fetch,
-): Promise<RouteResource[]> {
-    const routes = await apiClient.fetch(
-        "routes",
-        {
-            filters: {
-                type: [RouteType.LIGHT_RAIL, RouteType.HEAVY_RAIL],
-            },
-            fields: {
-                route: [
-                    "color",
-                    "direction_destinations",
-                    "direction_names",
-                    "long_name",
-                    "short-name",
-                ],
-            },
-            include: ["route_patterns"],
-        },
-        fetch,
-    );
-
-    // Current JSON:API flattening doesn't recurse, to avoid include loops,
-    // so fetch route patterns with representative trips separately here.
-    // This happens to be a good opportunity to filter by canonical
-    const routePatterns = await apiClient.fetch(
-        "route_patterns",
-        {
-            filters: {
-                route: routes.map((r) => r.id),
-                canonical: true,
-            },
-            fields: {
-                route_pattern: ["direction_id", "name", "sort_order"],
-            },
-            include: ["representative_trip"],
-        },
-        fetch,
-    );
-
-    // TODO: Maybe add a JSON:API helper for something like this
-    for (const route of routes) {
-        route.route_patterns = routePatterns.filter(
-            (p) => p.route?.id === route.id,
-        );
-    }
-
-    return routes;
-}

@@ -159,17 +159,9 @@
     async function fetchPatternStops(
         routePattern: RoutePatternResource,
     ): Promise<StopResource[]> {
-        const response = await apiClient.fetch("trips", {
-            filters: {
-                id: routePattern.representative_trip!.id,
-            },
-            fields: {
-                trip: [],
-            },
-            include: ["stops"],
-        });
-
-        return response[0].stops!;
+        return await fetch(
+            `/api/trip-stops?trip=${routePattern.representative_trip?.id}`,
+        ).then((r) => r.json());
     }
 
     async function fetchStopSchedules(
