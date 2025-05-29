@@ -1,4 +1,5 @@
 <script lang="ts">
+    import { browser } from "$app/environment";
     import "$lib/global.css";
     import ThemeToggle from "./ThemeToggle.svelte";
 </script>
@@ -9,7 +10,9 @@
         <span class="visually-hidden">T-Minus</span>
     </h1>
 
-    <ThemeToggle />
+    {#if browser}
+        <ThemeToggle />
+    {/if}
 </header>
 
 <style>
