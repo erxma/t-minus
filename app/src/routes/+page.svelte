@@ -9,14 +9,13 @@
         type ScheduleResource,
         type StopResource,
     } from "@t-minus/shared";
-    import { apiClient } from "$lib/components/api-client";
-    import { MbtaStreamedCollection } from "$lib/components/collections.svelte";
+    import { apiClient } from "$lib/util/api-client";
+    import { MbtaStreamedCollection } from "$lib/util/collections.svelte";
     import dayjs from "dayjs";
     import { page } from "$app/state";
     import type { PageProps } from "./$types";
-    import { afterNavigate, replaceState } from "$app/navigation";
+    import { replaceState } from "$app/navigation";
     import ListViewPage from "./ListViewPage.svelte";
-    import { untrack } from "svelte";
 
     type Arrivals =
         | readonly Readonly<ScheduleResource>[]

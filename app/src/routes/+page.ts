@@ -1,4 +1,4 @@
-import { apiClient } from "$lib/components/api-client.js";
+import { apiClient } from "$lib/util/api-client.js";
 import { RouteType, type RouteResource } from "@t-minus/shared";
 import type { PageLoad } from "./$types";
 import { redirect } from "@sveltejs/kit";
