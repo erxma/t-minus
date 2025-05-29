@@ -43,6 +43,7 @@
 
     a:link {
         text-decoration-line: none;
+        color: var(--fg-primary);
     }
 
     a:hover {
