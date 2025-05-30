@@ -147,7 +147,7 @@
     }
 
     .select-route {
-        padding: 0.2em 0.6em;
+        padding: 0.2em;
     }
 
     .select-dir-and-pattern {

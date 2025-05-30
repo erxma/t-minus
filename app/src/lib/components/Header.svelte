@@ -35,7 +35,7 @@
     nav {
         display: inline-flex;
         align-items: center;
-        gap: 1.4em;
+        gap: 1em;
 
         font-size: var(--font-size-l);
         font-weight: bold;
@@ -57,5 +57,6 @@
 
     h1 {
         margin: 0;
+        font-size: 2rem;
     }
 </style>

@@ -146,7 +146,7 @@
         overflow: hidden;
         border-radius: var(--border-radius);
         border: var(--border-primary);
-        margin: 20px;
+        margin: 12px;
     }
 
     .platform-name {
@@ -160,8 +160,8 @@
 
     .arrival {
         padding: 0.3em 0.7em;
-        display: grid;
-        grid-template-columns: 2fr 1fr;
+        display: flex;
+        justify-content: space-between;
 
         font-size: var(--font-size-m);
     }
@@ -179,8 +179,14 @@
     .arrival-time {
         display: inline-flex;
         justify-content: right;
+        align-items: center;
         gap: 0.2em;
         text-align: right;
+    }
+
+    .arrival-time > span {
+        display: inline-flex;
+        align-items: center;
     }
 
     .no-info {
