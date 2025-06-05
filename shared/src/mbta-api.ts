@@ -4,6 +4,29 @@ import {
     type CollectionRequestParams,
 } from "./json-api.js";
 
+export interface AlertsRequestParams extends CollectionRequestParams {
+    filters?: {
+        activity?: Activity | Activity[] | "ALL";
+        route_type?: RouteType | RouteType[];
+        direction_id?: 0 | 1;
+        route?: string | string[];
+        stop?: string | string[];
+        id?: string | string[];
+        banner?: boolean;
+        datatime?: string | string[];
+        lifecycle?: AlertLifecycle | AlertLifecycle[];
+        severity?: AlertSeverity | AlertSeverity[];
+    };
+}
+
+export type AlertLifecycle =
+    | "NEW"
+    | "ONGOING"
+    | "ONGOING_UPCOMING"
+    | "UPCOMING";
+
+export type AlertSeverity = 0 | 1 | 2 | 3 | 4 | 5 | 6 | 7 | 8 | 9 | 10;
+
 export interface StopsRequestParams {
     filters?: {
         route?: string;
@@ -69,6 +92,31 @@ export interface TripsRequestParams extends CollectionRequestParams {
         route_pattern?: string | string[];
         id?: string | string[];
         name?: string | string[];
+    };
+}
+
+export interface AlertResource {
+    type: "alert";
+    id: string;
+
+    // Attributes
+    url?: string | null;
+    updated_at?: string;
+    timeframe?: string | null;
+    short_header?: string;
+    severity?: AlertSeverity;
+    service_effect?: string;
+    lifecycle?: AlertLifecycle;
+    image_alternative_text?: string | null;
+    image?: string | null;
+    header?: string;
+    effect_name?: string;
+    description?: string | null;
+    created_at?: string;
+    banner?: string | null;
+    active_period?: {
+        start: string;
+        end: string;
     };
 }
 
@@ -270,6 +318,16 @@ export interface VehicleResource {
     route?: RouteResource | null;
 }
 
+export type Activity =
+    | "BOARD"
+    | "BRINGING_BIKE"
+    | "EXIT"
+    | "PARK_CAR"
+    | "RIDE"
+    | "STORE_BIKE"
+    | "USING_ESCALATOR"
+    | "USING_WHEELCHAIR";
+
 export type OccupancyStatus =
     | "MANY_SEATS_AVAILABLE"
     | "FEW_SEATS_AVAILABLE"
@@ -288,6 +346,7 @@ type MbtaApiEndpoint<ReqParams, Res> = {
 
 // Each corresponds to the endpoint of the same name of the API.
 type MbtaApiEndpoints = {
+    alerts: MbtaApiEndpoint<AlertsRequestParams, AlertResource>;
     stops: MbtaApiEndpoint<StopsRequestParams, StopResource>;
     predictions: MbtaApiEndpoint<PredictionsRequestParams, PredictionResource>;
     routes: MbtaApiEndpoint<RoutesRequestParams, RouteResource>;

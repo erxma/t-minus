@@ -4,6 +4,7 @@
     import {
         fetchNextSchedules,
         RouteType,
+        type AlertResource,
         type PredictionResource,
         type RoutePatternResource,
         type RouteResource,
@@ -54,6 +55,11 @@
         streamedArrivals ?? Promise.resolve(polledArrivals),
     );
 
+    let streamedAlerts: MbtaStreamedCollection<AlertResource> | undefined =
+        $state();
+    let polledAlerts: AlertResource[] | undefined = $state();
+    const alerts = $derived(streamedAlerts?.data ?? polledAlerts);
+
     const predictionsFetchParams = $derived({
         sort: "time",
         page: {
@@ -75,6 +81,13 @@
         include: ["route", "vehicle", "trip", "stop"],
     });
 
+    const alertsFetchParams = $derived({
+        filters: {
+            stop: selectedStop?.id,
+            route_type: [RouteType.HEAVY_RAIL, RouteType.LIGHT_RAIL],
+        },
+    });
+
     // If polling...
     if (import.meta.env.VITE_LIVE_UPDATE_METHOD === "poll") {
         $effect(() => {
@@ -93,6 +106,11 @@
                                 selectedRoute.id,
                             );
                         }
+
+                        polledAlerts = await apiClient.fetch(
+                            "alerts",
+                            alertsFetchParams,
+                        );
                     },
                     import.meta.env.VITE_POLL_INTERVAL_MS,
                 );
@@ -124,15 +142,20 @@
 
         // If streaming is on...
         if (import.meta.env.VITE_LIVE_UPDATE_METHOD === "stream") {
-            // If a stop was selected, start listening to predictions
+            // If a stop was selected, start listening to predictions and alerts
             if (selectedStop) {
-                const eventSource = apiClient.listen(
+                const predictionsEventSource = apiClient.listen(
                     "predictions",
                     predictionsFetchParams,
                 );
+                const alertsEventSource = apiClient.listen(
+                    "alerts",
+                    alertsFetchParams,
+                );
 
                 window.addEventListener("beforeunload", () => {
-                    eventSource.close();
+                    predictionsEventSource.close();
+                    alertsEventSource.close();
                 });
 
                 const timeAscending = (
@@ -145,13 +168,19 @@
 
                 streamedPredictions = new MbtaStreamedCollection(
                     "prediction",
-                    eventSource,
+                    predictionsEventSource,
                     timeAscending,
+                );
+                streamedAlerts = new MbtaStreamedCollection(
+                    "alert",
+                    alertsEventSource,
                 );
             } else if (streamedPredictions) {
                 // If deselecting, stop listening
                 streamedPredictions.close();
                 streamedPredictions = undefined;
+                streamedAlerts!.close();
+                streamedAlerts = undefined;
             }
         }
     }
@@ -210,4 +239,5 @@
     {routeStops}
     bind:selectedStop={() => selectedStop, setSelectedStop}
     {arrivals}
+    {alerts}
 />

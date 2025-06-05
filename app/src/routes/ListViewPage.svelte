@@ -9,6 +9,7 @@
     import { fade } from "svelte/transition";
 
     import {
+        type AlertResource,
         type PredictionResource,
         type RoutePatternResource,
         type RouteResource,
@@ -28,6 +29,7 @@
             | readonly Readonly<ScheduleResource>[]
             | undefined
         >;
+        alerts: readonly Readonly<AlertResource>[] | undefined;
     }
 
     let {
@@ -38,6 +40,7 @@
         routeStops,
         selectedStop = $bindable(),
         arrivals,
+        alerts,
     }: Props = $props();
 
     // (Can't be $derived because relation with selectedStop is two-way)
@@ -105,6 +108,7 @@
                             stop={selectedStop}
                             route={selectedRoute}
                             {arrivals}
+                            {alerts}
                         />
                     {/await}
                 {/if}

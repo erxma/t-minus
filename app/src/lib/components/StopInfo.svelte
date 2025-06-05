@@ -4,12 +4,13 @@
     import Loading from "./common/Loading.svelte";
     import RoutePill from "./common/RoutePill.svelte";
 
-    import { CalendarClock, Clock, Radio } from "@lucide/svelte";
+    import { CalendarClock, CircleAlert, Clock, Radio } from "@lucide/svelte";
     import { fade } from "svelte/transition";
 
     import { countdownText } from "$lib/util/formatting";
     import {
         groupArrivalsByPlatform,
+        type AlertResource,
         type PredictionResource,
         type RouteResource,
         type ScheduleResource,
@@ -22,9 +23,10 @@
         arrivals?:
             | readonly Readonly<PredictionResource | ScheduleResource>[]
             | Error;
+        alerts?: readonly Readonly<AlertResource>[];
     }
 
-    const { stop, route, arrivals: arrivals }: Props = $props();
+    const { stop, route, arrivals, alerts }: Props = $props();
 </script>
 
 <div
@@ -33,12 +35,25 @@
     style:--route-text-color="#{route.text_color}"
 >
     <span class="stop-title"
-        ><h2>{stop.name?.toUpperCase()}</h2>
+        ><span class="stop-title-left"
+            ><h2>{stop.name?.toUpperCase()}</h2>
+            {#if alerts && alerts.filter((a) => a.lifecycle !== "UPCOMING").length > 0}
+                <span aria-hidden="true">
+                    <CircleAlert
+                        color="black"
+                        fill="var(--warning)"
+                        size="24"
+                    />
+                </span>
+                <span class="visually-hidden">Alert active</span>
+            {/if}
+        </span>
         <AccessibilityIcon
             wheelchairBoarding={stop.wheelchair_boarding}
             size="24"
         />
     </span>
+
     {#if !arrivals}
         <Loading />
     {:else if arrivals instanceof Error}
@@ -119,6 +134,11 @@
         display: flex;
         align-items: center;
         justify-content: space-between;
+    }
+
+    .stop-title-left {
+        display: flex;
+        align-items: center;
     }
 
     h2 {

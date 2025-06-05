@@ -8,6 +8,8 @@
   --line-primary: hsl(0 0% 70%);
   --border-primary: 1px solid var(--line-primary);
 
+  --warning: #ffcc00;
+
   --font-size-xs: 0.8rem;
   --font-size-s: 1rem;
   --font-size-m: 1.2rem;

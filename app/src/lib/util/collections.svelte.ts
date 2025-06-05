@@ -21,7 +21,7 @@ export class MbtaStreamedCollection<R extends ResourceIdentifier> {
     /**
      * Comparison function that the data should be sorted by when read.
      */
-    orderCmp: (a: Readonly<R>, b: Readonly<R>) => number;
+    orderCmp?: (a: Readonly<R>, b: Readonly<R>) => number;
     /**
      * Handler for when the event source encounters an error.
      */
@@ -41,7 +41,7 @@ export class MbtaStreamedCollection<R extends ResourceIdentifier> {
     constructor(
         type: string,
         eventSource: EventSource,
-        orderCmp: (a: Readonly<R>, b: Readonly<R>) => number,
+        orderCmp?: (a: Readonly<R>, b: Readonly<R>) => number,
     ) {
         // Store these fields as is
         this.primaryType = type;
