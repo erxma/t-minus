@@ -4,7 +4,7 @@
     import Loading from "./common/Loading.svelte";
     import RoutePill from "./common/RoutePill.svelte";
 
-    import { CalendarClock, CircleAlert, Clock, Radio } from "@lucide/svelte";
+    import { CalendarClock, Clock, Radio } from "@lucide/svelte";
     import { fade } from "svelte/transition";
 
     import { countdownText } from "$lib/util/formatting";
@@ -16,6 +16,8 @@
         type ScheduleResource,
         type StopResource,
     } from "@t-minus/shared";
+    import Alerts from "./Alerts.svelte";
+    import AlertIcon from "./common/AlertIcon.svelte";
 
     interface Props {
         stop: StopResource;
@@ -27,6 +29,10 @@
     }
 
     const { stop, route, arrivals, alerts }: Props = $props();
+
+    const activeAlerts = $derived(
+        alerts?.filter((a) => a.lifecycle !== "UPCOMING"),
+    );
 </script>
 
 <div
@@ -37,15 +43,8 @@
     <span class="stop-title"
         ><span class="stop-title-left"
             ><h2>{stop.name?.toUpperCase()}</h2>
-            {#if alerts && alerts.filter((a) => a.lifecycle !== "UPCOMING").length > 0}
-                <span aria-hidden="true">
-                    <CircleAlert
-                        color="black"
-                        fill="var(--warning)"
-                        size="24"
-                    />
-                </span>
-                <span class="visually-hidden">Alert active</span>
+            {#if activeAlerts && activeAlerts.length > 0}
+                <AlertIcon />
             {/if}
         </span>
         <AccessibilityIcon
@@ -53,71 +52,78 @@
             size="24"
         />
     </span>
-
-    {#if !arrivals}
-        <Loading />
-    {:else if arrivals instanceof Error}
-        <p>Failed to get upcoming arrivals.</p>
-    {:else if arrivals.length > 0}
-        {@const platformArrivals = Object.entries(
-            groupArrivalsByPlatform(arrivals),
-        ).sort((a, b) => a[0].localeCompare(b[0]))}
-        <ol in:fade|global class="platform-list">
-            {#each platformArrivals as [platformName, arrivals] (platformName)}
-                <li class="platform">
-                    <span class="platform-name"><h2>{platformName}</h2></span>
-                    <ol>
-                        {#each arrivals as arrival (arrival.id)}
-                            <li class="arrival">
-                                <span class="headsign">
-                                    <RoutePill
-                                        route={arrival.route!}
-                                        abbreviate={true}
-                                        colorUnderneath="var(--surface)"
-                                        size="var(--font-size-m)"
-                                    />
-                                    {arrival.trip!.headsign}
-                                    {#if !arrival.departure_time}(drop-off){/if}
-                                </span>
-                                {#key countdownText(arrival)}
-                                    <span
-                                        class="arrival-time"
-                                        in:fade={{ duration: 800 }}
-                                    >
-                                        {#if arrival.type === "prediction"}
-                                            <span
-                                                aria-hidden="true"
-                                                title="Live Prediction"
-                                                ><Radio /></span
-                                            >
-                                            <span class="visually-hidden"
-                                                >Live prediction</span
-                                            >
-                                        {:else}
-                                            <span
-                                                aria-hidden="true"
-                                                title="Scheduled"
-                                                ><CalendarClock /></span
-                                            >
-                                            <span class="visually-hidden"
-                                                >Scheduled</span
-                                            >
-                                        {/if}
-                                        <span>{countdownText(arrival)}</span>
+    <div class="content">
+        {#if activeAlerts && activeAlerts.length > 0}
+            <div in:fade|global><Alerts alerts={activeAlerts} /></div>
+        {/if}
+        {#if !arrivals}
+            <Loading />
+        {:else if arrivals instanceof Error}
+            <p>Failed to get upcoming arrivals.</p>
+        {:else if arrivals.length > 0}
+            {@const platformArrivals = Object.entries(
+                groupArrivalsByPlatform(arrivals),
+            ).sort((a, b) => a[0].localeCompare(b[0]))}
+            <ol in:fade|global class="platform-list">
+                {#each platformArrivals as [platformName, arrivals] (platformName)}
+                    <li class="platform">
+                        <span class="platform-name"
+                            ><h2>{platformName}</h2></span
+                        >
+                        <ol>
+                            {#each arrivals as arrival (arrival.id)}
+                                <li class="arrival">
+                                    <span class="headsign">
+                                        <RoutePill
+                                            route={arrival.route!}
+                                            abbreviate={true}
+                                            colorUnderneath="var(--surface)"
+                                            size="var(--font-size-m)"
+                                        />
+                                        {arrival.trip!.headsign}
+                                        {#if !arrival.departure_time}(drop-off){/if}
                                     </span>
-                                {/key}
-                            </li>
-                        {/each}
-                    </ol>
-                </li>
-            {/each}
-        </ol>
-    {:else}
-        <div class="no-info">
-            <Clock size={48} color="var(--fg-primary)" />
-            <p>No upcoming arrivals information available.</p>
-        </div>
-    {/if}
+                                    {#key countdownText(arrival)}
+                                        <span
+                                            class="arrival-time"
+                                            in:fade={{ duration: 800 }}
+                                        >
+                                            {#if arrival.type === "prediction"}
+                                                <span
+                                                    aria-hidden="true"
+                                                    title="Live Prediction"
+                                                    ><Radio /></span
+                                                >
+                                                <span class="visually-hidden"
+                                                    >Live prediction</span
+                                                >
+                                            {:else}
+                                                <span
+                                                    aria-hidden="true"
+                                                    title="Scheduled"
+                                                    ><CalendarClock /></span
+                                                >
+                                                <span class="visually-hidden"
+                                                    >Scheduled</span
+                                                >
+                                            {/if}
+                                            <span>{countdownText(arrival)}</span
+                                            >
+                                        </span>
+                                    {/key}
+                                </li>
+                            {/each}
+                        </ol>
+                    </li>
+                {/each}
+            </ol>
+        {:else}
+            <div class="no-info">
+                <Clock size={48} color="var(--fg-primary)" />
+                <p>No upcoming arrivals information available.</p>
+            </div>
+        {/if}
+    </div>
 </div>
 
 <style>
@@ -137,16 +143,23 @@
     }
 
     .stop-title-left {
-        display: flex;
+        display: inline-flex;
         align-items: center;
+        gap: 0.4em;
+        margin-left: 1em;
     }
 
     h2 {
         font-size: var(--font-size-l);
+        margin: 0;
     }
 
-    .stop-title h2 {
-        margin: 0 20px;
+    .content {
+        display: flex;
+        flex-direction: column;
+        gap: 24px;
+        overflow-y: scroll;
+        padding: 12px;
     }
 
     ol {
@@ -157,7 +170,6 @@
 
     .platform-list {
         padding-bottom: 64px;
-        overflow-y: auto;
     }
 
     .platform {
@@ -166,7 +178,6 @@
         overflow: hidden;
         border-radius: var(--border-radius);
         border: var(--border-primary);
-        margin: 12px;
     }
 
     .platform-name {

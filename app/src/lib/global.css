@@ -8,7 +8,8 @@
   --line-primary: hsl(0 0% 70%);
   --border-primary: 1px solid var(--line-primary);
 
-  --warning: #ffcc00;
+  --text-warning: #ffcc00;
+  --bg-warning: #ffeebb;
 
   --font-size-xs: 0.8rem;
   --font-size-s: 1rem;
@@ -40,6 +41,8 @@
   --muted: #2a2a2a;
 
   --line-primary: hsl(0 0% 25%);
+
+  --bg-warning: #826300;
 }
 
 body {
@@ -110,4 +113,45 @@ button {
 
   border: none;
   background-color: var(--surface);
+}
+
+[data-accordion-trigger] {
+  border: none;
+
+  font-size: var(--font-size-m);
+  text-align: left;
+  background: var(--surface);
+  padding: 12px;
+}
+
+[data-accordion-item] {
+  border: var(--border-primary);
+  border-radius: var(--border-radius);
+  overflow: hidden;
+}
+
+[data-accordion-content][data-state="closed"] {
+  animation: accordion-up 0.3s ease-out;
+}
+
+[data-accordion-content][data-state="open"] {
+  animation: accordion-down 0.3s ease-out;
+}
+
+@keyframes accordion-down {
+  from {
+    height: 0;
+  }
+  to {
+    height: var(--bits-accordion-content-height);
+  }
+}
+
+@keyframes accordion-up {
+  from {
+    height: var(--bits-accordion-content-height);
+  }
+  to {
+    height: 0;
+  }
 }

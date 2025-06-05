@@ -1,0 +1,8 @@
+[data-accordion-trigger] {
+    display: flex;
+    align-items: center;
+    gap: 0.8em;
+    color: var(--fg-primary);
+    font-size: var(--font-size-m);
+    background-color: var(--bg-warning);
+}
