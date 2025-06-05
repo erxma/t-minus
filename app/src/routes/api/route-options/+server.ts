@@ -27,10 +27,11 @@ export const GET: RequestHandler = async ({ fetch }) => {
             fields: {
                 route: [
                     "color",
+                    "text_color",
                     "direction_destinations",
                     "direction_names",
                     "long_name",
-                    "short-name",
+                    "short_name",
                 ],
             },
             include: ["route_patterns"],
