@@ -167,6 +167,7 @@
         gap: 24px;
         overflow-y: scroll;
         padding: 12px;
+        height: 100%;
     }
 
     ol {

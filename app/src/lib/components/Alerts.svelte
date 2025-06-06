@@ -13,13 +13,17 @@
 
     const { alerts }: Props = $props();
 
+    const sortedAlerts = $derived(
+        alerts.toSorted((a, b) => b.severity! - a.severity!),
+    );
+
     function hasDetails(alert: AlertResource): boolean {
         return alert.image !== null;
     }
 </script>
 
 <Accordion.Root type="multiple">
-    {#each alerts as alert}
+    {#each sortedAlerts as alert}
         <Accordion.Item>
             <Accordion.Header>
                 <Accordion.Trigger disabled={!hasDetails(alert)}>
