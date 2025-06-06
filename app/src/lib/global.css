@@ -122,6 +122,12 @@ button {
   text-align: left;
   background: var(--surface);
   padding: 12px;
+
+  width: 100%;
+}
+
+[data-accordion-trigger][data-disabled] {
+  cursor: default;
 }
 
 [data-accordion-item] {

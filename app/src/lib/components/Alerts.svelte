@@ -12,16 +12,26 @@
     }
 
     const { alerts }: Props = $props();
+
+    function hasDetails(alert: AlertResource): boolean {
+        return alert.image !== null;
+    }
 </script>
 
 <Accordion.Root type="multiple">
     {#each alerts as alert}
         <Accordion.Item>
             <Accordion.Header>
-                <Accordion.Trigger>
-                    <AlertIcon size="32" />
-                    <div>{alert.header}</div>
-                    <span><ChevronDown size="32" /></span>
+                <Accordion.Trigger disabled={!hasDetails(alert)}>
+                    <div class="trigger-left">
+                        <AlertIcon size="32" />
+                        <div>{alert.header}</div>
+                    </div>
+                    {#if hasDetails(alert)}
+                        <div class="trigger-right">
+                            <ChevronDown size="32" />
+                        </div>
+                    {/if}
                 </Accordion.Trigger>
             </Accordion.Header>
             <Accordion.Content>
@@ -43,6 +53,13 @@
         width: 100%;
         max-width: 840px;
         border-radius: var(--border-radius);
+    }
+
+    .trigger-left,
+    .trigger-right {
+        display: inline-flex;
+        align-items: center;
+        gap: 0.8em;
     }
 
     .content-inner {
