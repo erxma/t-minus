@@ -1,7 +1,10 @@
 import dayjs, { Dayjs } from "dayjs";
 import timezone from "dayjs/plugin/timezone.js";
+import invariant from "tiny-invariant";
 import { RouteType, type SchedulesRequestParams } from "./mbta-api.js";
 import type {
+    AlertResource,
+    InformedEntity,
     MbtaApiClient,
     PredictionResource,
     ScheduleResource,
@@ -163,6 +166,25 @@ export function groupArrivalsByPlatform(
     }
 
     return groups;
+}
+
+export function entityIsAffectedByAlert(
+    entity: Partial<InformedEntity>,
+    alert: AlertResource,
+): boolean {
+    invariant(alert.informed_entity !== undefined);
+    // True if:
+    // For some informed entity,
+    // every key present in entity is either not present in the informed,
+    // or the two have equal values.
+    return alert.informed_entity.some((informed) =>
+        Object.keys(entity).every(
+            (key) =>
+                !(key in informed) ||
+                entity[key as keyof InformedEntity] ===
+                    informed[key as keyof InformedEntity],
+        ),
+    );
 }
 
 /**

@@ -118,6 +118,24 @@ export interface AlertResource {
         start: string;
         end: string;
     };
+    informed_entity?: InformedEntity[];
+}
+
+/**
+ * An entity affected by an alert.
+ *
+ * At least one of the fields other than activities will be non-null.
+ * The affected entity is the intersection of these fields, not the union:
+ * if stop and route both have values, the alert does not affect the entire route.
+ */
+export interface InformedEntity {
+    trip?: string | null;
+    stop?: string | null;
+    route_type?: RouteType | null;
+    route?: string | null;
+    facility?: string | null;
+    direction_id?: 0 | 1 | null;
+    activities?: Activity[] | null;
 }
 
 export interface PredictionResource {

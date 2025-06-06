@@ -9,6 +9,7 @@
 
     import { countdownText } from "$lib/util/formatting";
     import {
+        entityIsAffectedByAlert,
         groupArrivalsByPlatform,
         type AlertResource,
         type PredictionResource,
@@ -33,6 +34,12 @@
     const activeAlerts = $derived(
         alerts?.filter((a) => a.lifecycle !== "UPCOMING"),
     );
+    const isAffectedByAlert: boolean = $derived(
+        activeAlerts !== undefined &&
+            activeAlerts.some((alert) =>
+                entityIsAffectedByAlert({ stop: stop.id }, alert),
+            ),
+    );
 </script>
 
 <div
@@ -43,7 +50,7 @@
     <span class="stop-title"
         ><span class="stop-title-left"
             ><h2>{stop.name?.toUpperCase()}</h2>
-            {#if activeAlerts && activeAlerts.length > 0}
+            {#if isAffectedByAlert}
                 <AlertIcon />
             {/if}
         </span>
