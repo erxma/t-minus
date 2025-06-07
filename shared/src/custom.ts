@@ -116,7 +116,11 @@ export async function fetchNextSchedules(
             route: routeId,
             min_time: minServiceTime,
             date: minServiceDay,
-            route_type: [RouteType.HEAVY_RAIL, RouteType.LIGHT_RAIL],
+            route_type: [
+                RouteType.HEAVY_RAIL,
+                RouteType.LIGHT_RAIL,
+                RouteType.COMMUTER_RAIL,
+            ],
         },
         fields: {
             schedule: ["arrival_time", "departure_time"],

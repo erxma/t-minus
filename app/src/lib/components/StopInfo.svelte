@@ -11,6 +11,7 @@
     import {
         entityIsAffectedByAlert,
         groupArrivalsByChildStop,
+        RouteType,
         type AlertResource,
         type ArrivalResource,
         type RouteResource,
@@ -18,6 +19,7 @@
     } from "@t-minus/shared";
     import Alerts from "./Alerts.svelte";
     import AlertIcon from "./common/AlertIcon.svelte";
+    import CommuterRailTripPill from "./common/CommuterRailTripPill.svelte";
 
     interface Props {
         stop: StopResource;
@@ -82,14 +84,26 @@
                         {#each arrivals as arrival (arrival.id)}
                             <li class="arrival">
                                 <span class="headsign">
-                                    <RoutePill
-                                        route={arrival.route!}
-                                        abbreviate={true}
-                                        colorUnderneath="var(--surface)"
-                                        size="var(--font-size-m)"
-                                    />
+                                    {#if arrival.route!.type_ === RouteType.COMMUTER_RAIL}
+                                        <CommuterRailTripPill
+                                            trip={arrival.trip!}
+                                            route={arrival.route!}
+                                            size="var(--font-size-m)"
+                                        />
+                                    {:else}
+                                        <RoutePill
+                                            route={arrival.route!}
+                                            abbreviate={true}
+                                            colorUnderneath="var(--surface)"
+                                            size="var(--font-size-m)"
+                                        />
+                                    {/if}
                                     {arrival.trip!.headsign}
-                                    {#if !arrival.departure_time}(drop-off){/if}
+                                    <!-- If no departure time, passengers can't board.
+                                     Exception is CR predictions sometimes have neither time; typically with a status.
+                                     If also no times and no status, stop will not be made. -->
+                                    <!-- TODO: When stop won't be made, should refer to schedule relationship  -->
+                                    {#if !arrival.departure_time && arrival.arrival_time}(drop-off){/if}
                                 </span>
                                 {#key countdownText(arrival)}
                                     <span
@@ -123,6 +137,7 @@
                     </ol>
                 </li>
             {/snippet}
+            <!-- FIXME: This isn't accurate in many cases at start of route -->
             {@const primaryPlatform = platformGroups!.find(
                 (g) => g.stop.id === stop.id,
             )!}
@@ -131,22 +146,27 @@
                 .sort((a, b) =>
                     a.stop.platform_name!.localeCompare(b.stop.platform_name!),
                 )}
-            <div>
-                <ol in:fade|global class="platform-list">
+            <div in:fade>
+                <ol class="platform-list">
                     {@render platformBox(
                         primaryPlatform.stop,
                         primaryPlatform.arrivals,
                     )}
                 </ol>
-                <hr />
-                <div>
-                    <h3>OTHER PLATFORMS</h3>
-                    <ol in:fade|global class="platform-list">
-                        {#each otherPlatforms as group (group.stop.id)}
-                            {@render platformBox(group.stop, group.arrivals)}
-                        {/each}
-                    </ol>
-                </div>
+                {#if otherPlatforms.length > 0}
+                    <hr />
+                    <div>
+                        <h3>OTHER PLATFORMS</h3>
+                        <ol class="platform-list">
+                            {#each otherPlatforms as group (group.stop.id)}
+                                {@render platformBox(
+                                    group.stop,
+                                    group.arrivals,
+                                )}
+                            {/each}
+                        </ol>
+                    </div>
+                {/if}
             </div>
         {:else}
             <div class="no-info">

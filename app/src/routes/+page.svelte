@@ -79,7 +79,11 @@
         },
         filters: {
             stop: selectedStop?.parent_station?.id!,
-            route_type: [RouteType.HEAVY_RAIL, RouteType.LIGHT_RAIL],
+            route_type: [
+                RouteType.HEAVY_RAIL,
+                RouteType.LIGHT_RAIL,
+                RouteType.COMMUTER_RAIL,
+            ],
         },
         include: ["route", "vehicle", "trip", "stop"],
     });
