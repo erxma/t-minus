@@ -22,6 +22,8 @@ export interface ResourceIdentifier {
 
 type Relationships = { [key: string]: RelationshipObject };
 
+// FIXME: Not accurate as sometimes there may only be link.
+// As of writing not an issue as those aren't being used (mainly facilities).
 interface RelationshipObject {
     data: ResourceIdentifier | ResourceIdentifier[] | null;
 }
@@ -98,10 +100,10 @@ export function flattenResource(
     resource: JsonApiResource,
     included?: JsonApiResource[],
 ): object {
-    const relationships =
-        included !== undefined
-            ? denormalizeRelationships(resource.relationships ?? {}, included)
-            : resource.relationships;
+    const relationships = denormalizeRelationships(
+        resource.relationships ?? {},
+        included,
+    );
 
     // Replace any "type" attribute with "type_"
     // JSON:API prohibits such an attribute but it occurs in MBTA API
@@ -121,7 +123,7 @@ export function flattenResource(
 
 export function denormalizeRelationships(
     relationships: Relationships,
-    included: JsonApiResource[],
+    included?: JsonApiResource[],
 ): object {
     const resultEntries: [string, unknown][] = [];
     for (const [key, relObj] of Object.entries(relationships)) {
@@ -134,10 +136,10 @@ export function denormalizeRelationships(
 
     function denormalizeIncluded(
         resId: ResourceIdentifier | null,
-        included: JsonApiResource[],
+        included?: JsonApiResource[],
     ): object | ResourceIdentifier | null {
-        if (resId === null) {
-            return null;
+        if (!included || resId === null) {
+            return resId;
         }
 
         const resource = included.find(
