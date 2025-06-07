@@ -8,9 +8,12 @@ import type {
     MbtaApiClient,
     PredictionResource,
     ScheduleResource,
+    StopResource,
 } from "./mbta-api.js";
 
 dayjs.extend(timezone);
+
+export type ArrivalResource = PredictionResource | ScheduleResource;
 
 export async function fetchExpectedTimesForStop(
     client: MbtaApiClient,
@@ -151,21 +154,20 @@ export async function fetchNextSchedules(
     return afterSchedulesResponse;
 }
 
-export function groupArrivalsByPlatform(
-    arrivals: readonly (PredictionResource | ScheduleResource)[],
-) {
-    const groups: Record<string, (PredictionResource | ScheduleResource)[]> =
-        {};
+export function groupArrivalsByChildStop(
+    arrivals: readonly ArrivalResource[],
+): { stop: StopResource; arrivals: ArrivalResource[] }[] {
+    const groups = new Map();
 
     for (const arrival of arrivals) {
-        const platformName = arrival.stop?.platform_name!;
-        if (!(platformName in groups)) {
-            groups[platformName] = [];
+        const platformId = arrival.stop!.id;
+        if (!groups.has(platformId)) {
+            groups.set(platformId, { stop: arrival.stop!, arrivals: [] });
         }
-        groups[platformName].push(arrival);
+        groups.get(platformId).arrivals.push(arrival);
     }
 
-    return groups;
+    return Array.from(groups.values());
 }
 
 export function entityIsAffectedByAlert(

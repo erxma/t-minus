@@ -47,7 +47,10 @@
         if (streamedPredictions.data.length > 0) {
             return Promise.resolve(streamedPredictions.data);
         } else {
-            return fetchStopSchedules(selectedStop!.id, selectedRoute.id);
+            return fetchStopSchedules(
+                selectedStop?.parent_station?.id!,
+                selectedRoute.id,
+            );
         }
     });
     let polledArrivals: Arrivals | undefined = $state();
@@ -75,7 +78,7 @@
             ],
         },
         filters: {
-            stop: selectedStop?.id,
+            stop: selectedStop?.parent_station?.id!,
             route_type: [RouteType.HEAVY_RAIL, RouteType.LIGHT_RAIL],
         },
         include: ["route", "vehicle", "trip", "stop"],
@@ -102,7 +105,7 @@
                             polledArrivals = predictions;
                         } else {
                             polledArrivals = await fetchStopSchedules(
-                                selectedStop!.id,
+                                selectedStop?.parent_station?.id!,
                                 selectedRoute.id,
                             );
                         }

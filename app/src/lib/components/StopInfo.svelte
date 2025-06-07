@@ -10,11 +10,10 @@
     import { countdownText } from "$lib/util/formatting";
     import {
         entityIsAffectedByAlert,
-        groupArrivalsByPlatform,
+        groupArrivalsByChildStop,
         type AlertResource,
-        type PredictionResource,
+        type ArrivalResource,
         type RouteResource,
-        type ScheduleResource,
         type StopResource,
     } from "@t-minus/shared";
     import Alerts from "./Alerts.svelte";
@@ -23,14 +22,17 @@
     interface Props {
         stop: StopResource;
         route: RouteResource;
-        arrivals?:
-            | readonly Readonly<PredictionResource | ScheduleResource>[]
-            | Error;
+        arrivals?: readonly Readonly<ArrivalResource>[] | Error;
         alerts?: readonly Readonly<AlertResource>[];
     }
 
     const { stop, route, arrivals, alerts }: Props = $props();
 
+    const platformGroups = $derived(
+        arrivals && !(arrivals instanceof Error)
+            ? groupArrivalsByChildStop(arrivals)
+            : undefined,
+    );
     const activeAlerts = $derived(
         alerts?.filter((a) => a.lifecycle !== "UPCOMING"),
     );
@@ -49,7 +51,7 @@
 >
     <span class="stop-title"
         ><span class="stop-title-left"
-            ><h2>{stop.name?.toUpperCase()}</h2>
+            ><h2>{stop.name}</h2>
             {#if isAffectedByAlert}
                 <AlertIcon />
             {/if}
@@ -68,62 +70,84 @@
         {:else if arrivals instanceof Error}
             <p>Failed to get upcoming arrivals.</p>
         {:else if arrivals.length > 0}
-            {@const platformArrivals = Object.entries(
-                groupArrivalsByPlatform(arrivals),
-            ).sort((a, b) => a[0].localeCompare(b[0]))}
-            <ol in:fade|global class="platform-list">
-                {#each platformArrivals as [platformName, arrivals] (platformName)}
-                    <li class="platform">
-                        <span class="platform-name"
-                            ><h2>{platformName}</h2></span
-                        >
-                        <ol>
-                            {#each arrivals as arrival (arrival.id)}
-                                <li class="arrival">
-                                    <span class="headsign">
-                                        <RoutePill
-                                            route={arrival.route!}
-                                            abbreviate={true}
-                                            colorUnderneath="var(--surface)"
-                                            size="var(--font-size-m)"
-                                        />
-                                        {arrival.trip!.headsign}
-                                        {#if !arrival.departure_time}(drop-off){/if}
-                                    </span>
-                                    {#key countdownText(arrival)}
-                                        <span
-                                            class="arrival-time"
-                                            in:fade={{ duration: 800 }}
-                                        >
-                                            {#if arrival.type === "prediction"}
-                                                <span
-                                                    aria-hidden="true"
-                                                    title="Live Prediction"
-                                                    ><Radio /></span
-                                                >
-                                                <span class="visually-hidden"
-                                                    >Live prediction</span
-                                                >
-                                            {:else}
-                                                <span
-                                                    aria-hidden="true"
-                                                    title="Scheduled"
-                                                    ><CalendarClock /></span
-                                                >
-                                                <span class="visually-hidden"
-                                                    >Scheduled</span
-                                                >
-                                            {/if}
-                                            <span>{countdownText(arrival)}</span
+            {#snippet platformBox(
+                stop: StopResource,
+                arrivals: ArrivalResource[],
+            )}
+                <li class="platform">
+                    <span class="platform-name"
+                        ><h2>{stop.platform_name}</h2></span
+                    >
+                    <ol>
+                        {#each arrivals as arrival (arrival.id)}
+                            <li class="arrival">
+                                <span class="headsign">
+                                    <RoutePill
+                                        route={arrival.route!}
+                                        abbreviate={true}
+                                        colorUnderneath="var(--surface)"
+                                        size="var(--font-size-m)"
+                                    />
+                                    {arrival.trip!.headsign}
+                                    {#if !arrival.departure_time}(drop-off){/if}
+                                </span>
+                                {#key countdownText(arrival)}
+                                    <span
+                                        class="arrival-time"
+                                        in:fade={{ duration: 800 }}
+                                    >
+                                        {#if arrival.type === "prediction"}
+                                            <span
+                                                aria-hidden="true"
+                                                title="Live Prediction"
+                                                ><Radio /></span
                                             >
-                                        </span>
-                                    {/key}
-                                </li>
-                            {/each}
-                        </ol>
-                    </li>
-                {/each}
-            </ol>
+                                            <span class="visually-hidden"
+                                                >Live prediction</span
+                                            >
+                                        {:else}
+                                            <span
+                                                aria-hidden="true"
+                                                title="Scheduled"
+                                                ><CalendarClock /></span
+                                            >
+                                            <span class="visually-hidden"
+                                                >Scheduled</span
+                                            >
+                                        {/if}
+                                        <span>{countdownText(arrival)}</span>
+                                    </span>
+                                {/key}
+                            </li>
+                        {/each}
+                    </ol>
+                </li>
+            {/snippet}
+            {@const primaryPlatform = platformGroups!.find(
+                (g) => g.stop.id === stop.id,
+            )!}
+            {@const otherPlatforms = platformGroups!
+                .filter((g) => g.stop.id !== stop.id)
+                .sort((a, b) =>
+                    a.stop.platform_name!.localeCompare(b.stop.platform_name!),
+                )}
+            <div>
+                <ol in:fade|global class="platform-list">
+                    {@render platformBox(
+                        primaryPlatform.stop,
+                        primaryPlatform.arrivals,
+                    )}
+                </ol>
+                <hr />
+                <div>
+                    <h3>OTHER PLATFORMS</h3>
+                    <ol in:fade|global class="platform-list">
+                        {#each otherPlatforms as group (group.stop.id)}
+                            {@render platformBox(group.stop, group.arrivals)}
+                        {/each}
+                    </ol>
+                </div>
+            </div>
         {:else}
             <div class="no-info">
                 <Clock size={48} color="var(--fg-primary)" />
@@ -147,6 +171,7 @@
         display: flex;
         align-items: center;
         justify-content: space-between;
+        text-transform: uppercase;
     }
 
     .stop-title-left {
@@ -168,6 +193,7 @@
         overflow-y: scroll;
         padding: 12px;
         height: 100%;
+        padding-bottom: 64px;
     }
 
     ol {
@@ -177,7 +203,21 @@
     }
 
     .platform-list {
-        padding-bottom: 64px;
+        display: flex;
+        flex-direction: column;
+        gap: 12px;
+    }
+
+    hr {
+        border: none;
+        border-top: 3px solid var(--muted);
+        width: 100%;
+        margin: 12px 0;
+    }
+
+    h3 {
+        font-size: var(--font-size-m);
+        margin: 12px 8px;
     }
 
     .platform {
