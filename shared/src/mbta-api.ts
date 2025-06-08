@@ -448,6 +448,11 @@ export class MbtaApiClient {
         // Start listening
         const eventSource = new EventSource(url);
 
+        // Be sure to close on unload
+        window.addEventListener("beforeunload", () => {
+            eventSource.close();
+        });
+
         // Return the EventSource (most importantly, so it can be closed)
         return eventSource;
     }

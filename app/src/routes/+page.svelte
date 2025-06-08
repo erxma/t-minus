@@ -160,11 +160,6 @@
                     alertsFetchParams,
                 );
 
-                window.addEventListener("beforeunload", () => {
-                    predictionsEventSource.close();
-                    alertsEventSource.close();
-                });
-
                 const timeAscending = (
                     a: PredictionResource,
                     b: PredictionResource,

@@ -48,6 +48,13 @@
     );
 </script>
 
+{#snippet noInfo(text: string)}
+    <div class="no-info">
+        <Clock size={48} color="var(--fg-primary)" />
+        <p>{text}</p>
+    </div>
+{/snippet}
+
 <div
     class="stop-info"
     style:--route-color="#{route.color}"
@@ -78,7 +85,7 @@
                 stop: StopResource,
                 arrivals: ArrivalResource[],
             )}
-                <li class="platform">
+                <li class="platform" transition:fade>
                     <span class="platform-name"
                         ><h2>{stop.platform_name}</h2></span
                     >
@@ -148,7 +155,7 @@
                 .sort((a, b) =>
                     a.stop.platform_name!.localeCompare(b.stop.platform_name!),
                 )}
-            <div in:fade>
+            <div in:fade|global>
                 {#if primaryPlatform}
                     <ol class="platform-list">
                         {@render platformBox(
@@ -157,13 +164,9 @@
                         )}
                     </ol>
                 {:else}
-                    <div class="no-info">
-                        <Clock size={48} color="var(--fg-primary)" />
-                        <p>
-                            No predictions at this stop for the selected route
-                            pattern right now.
-                        </p>
-                    </div>
+                    {@render noInfo(
+                        "No predictions at this stop for the selected route pattern right now.",
+                    )}
                 {/if}
                 {#if otherPlatforms.length > 0}
                     <hr />
@@ -181,10 +184,7 @@
                 {/if}
             </div>
         {:else}
-            <div class="no-info">
-                <Clock size={48} color="var(--fg-primary)" />
-                <p>No upcoming arrivals information available.</p>
-            </div>
+            {@render noInfo("No upcoming arrivals information available.")}
         {/if}
     </div>
 </div>
