@@ -142,19 +142,29 @@
             <!-- FIXME: This isn't accurate in many cases at start of route -->
             {@const primaryPlatform = platformGroups!.find(
                 (g) => g.stop.id === stop.id,
-            )!}
+            )}
             {@const otherPlatforms = platformGroups!
                 .filter((g) => g.stop.id !== stop.id)
                 .sort((a, b) =>
                     a.stop.platform_name!.localeCompare(b.stop.platform_name!),
                 )}
             <div in:fade>
-                <ol class="platform-list">
-                    {@render platformBox(
-                        primaryPlatform.stop,
-                        primaryPlatform.arrivals,
-                    )}
-                </ol>
+                {#if primaryPlatform}
+                    <ol class="platform-list">
+                        {@render platformBox(
+                            primaryPlatform.stop,
+                            primaryPlatform.arrivals,
+                        )}
+                    </ol>
+                {:else}
+                    <div class="no-info">
+                        <Clock size={48} color="var(--fg-primary)" />
+                        <p>
+                            No predictions at this stop for the selected route
+                            pattern right now.
+                        </p>
+                    </div>
+                {/if}
                 {#if otherPlatforms.length > 0}
                     <hr />
                     <div>
