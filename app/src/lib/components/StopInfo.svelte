@@ -41,7 +41,9 @@
     const isAffectedByAlert: boolean = $derived(
         activeAlerts !== undefined &&
             activeAlerts.some((alert) =>
-                entityIsAffectedByAlert({ stop: stop.id }, alert),
+                // Recommended practice is to check alerts for entire route
+                // if no info on a users's specific trip
+                entityIsAffectedByAlert({ route: route.id }, alert),
             ),
     );
 </script>

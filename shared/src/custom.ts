@@ -174,23 +174,41 @@ export function groupArrivalsByChildStop(
     return Array.from(groups.values());
 }
 
+/**
+ * Returns `true` if the given `entity` is considered affected
+ * by the given `alert` - specifically, if the `alert` has any
+ * informed entity that *agrees with `entity` on the values of their overlapping keys*.
+ *
+ * @param mustHaveOverlap If `true`, an informed entity is only matched
+ * if it has at least one key in common with `entity`. Otherwise, having no keys
+ * in common is considered a match. Defaults to `true`.
+ */
 export function entityIsAffectedByAlert(
     entity: Partial<InformedEntity>,
     alert: AlertResource,
+    mustHaveOverlap?: boolean,
 ): boolean {
     invariant(alert.informed_entity !== undefined);
-    // True if:
-    // For some informed entity,
-    // every key present in entity is either not present in the informed,
-    // or the two have equal values.
-    return alert.informed_entity.some((informed) =>
-        Object.keys(entity).every(
+    mustHaveOverlap ??= true;
+
+    // Affected if any of alert's informed entities satisfies this:
+    return alert.informed_entity.some((informed) => {
+        // Get keys shared by reference entity and informed
+        const overlappingKeys = Object.keys(entity).filter(
+            (k) => k in informed,
+        );
+        // If some overlap is required by there is none, not a match
+        if (mustHaveOverlap && overlappingKeys.length === 0) {
+            return false;
+        }
+        // It's a match if both agree on the values for the shared keys
+        return overlappingKeys.every(
             (key) =>
                 !(key in informed) ||
                 entity[key as keyof InformedEntity] ===
                     informed[key as keyof InformedEntity],
-        ),
-    );
+        );
+    });
 }
 
 /**
