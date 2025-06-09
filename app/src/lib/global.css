@@ -47,9 +47,14 @@
 
 body {
   margin: 0;
-  height: 100vh;
-  display: flex;
-  flex-direction: column;
+}
+
+@media (min-width: 1024px) {
+  body {
+    height: 100dvh;
+    display: flex;
+    flex-direction: column;
+  }
 }
 
 button {
@@ -166,4 +171,18 @@ button {
   to {
     height: 0;
   }
+}
+
+.small-message {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  font-size: var(--font-size-m);
+  padding: 1em;
+
+  text-align: center;
+}
+
+.scroll-container {
+  scrollbar-color: var(--button-color) var(--bg-primary);
 }

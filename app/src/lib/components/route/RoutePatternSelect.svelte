@@ -47,36 +47,34 @@
 </script>
 
 <div class="container">
-    <div class="select-route">
-        <Select.Root
-            type="single"
-            onValueChange={(v) => {
-                selectedRoute = routeOptions.find((route) => route.id === v)!;
-                selectedDirectionId = 0;
-                selectedRoutePattern = routePatternOptions[0];
-            }}
-        >
-            <Select.Trigger aria-label="Select route">
-                <span class="select-trigger-inner">
-                    <RoutePill route={selectedRoute} />
-                    <ChevronDown />
-                </span>
-            </Select.Trigger>
-            <Select.Portal>
-                <Select.Content class="select-content">
-                    {#each routeOptions as route (route.id)}
-                        <Select.Item
-                            value={route.id}
-                            label={route.long_name}
-                            class="select-item"
-                        >
-                            <RoutePill {route} size="var(--font-size-m)" />
-                        </Select.Item>
-                    {/each}
-                </Select.Content>
-            </Select.Portal>
-        </Select.Root>
-    </div>
+    <Select.Root
+        type="single"
+        onValueChange={(v) => {
+            selectedRoute = routeOptions.find((route) => route.id === v)!;
+            selectedDirectionId = 0;
+            selectedRoutePattern = routePatternOptions[0];
+        }}
+    >
+        <Select.Trigger aria-label="Select route">
+            <span class="select-trigger-inner">
+                <RoutePill route={selectedRoute} />
+                <ChevronDown />
+            </span>
+        </Select.Trigger>
+        <Select.Portal>
+            <Select.Content class="select-content">
+                {#each routeOptions as route (route.id)}
+                    <Select.Item
+                        value={route.id}
+                        label={route.long_name}
+                        class="select-item"
+                    >
+                        <RoutePill {route} size="var(--font-size-m)" />
+                    </Select.Item>
+                {/each}
+            </Select.Content>
+        </Select.Portal>
+    </Select.Root>
 
     <div class="select-dir-and-pattern">
         <div class="dir-and-pattern-name">
@@ -137,17 +135,14 @@
         display: flex;
         flex-direction: column;
         align-items: center;
-        margin: 0.6em;
+        gap: 12px;
+        margin: 12px;
     }
 
     .select-trigger-inner {
         display: inline-flex;
         align-items: center;
         color: var(--fg-primary);
-    }
-
-    .select-route {
-        padding: 0.2em;
     }
 
     .select-dir-and-pattern {

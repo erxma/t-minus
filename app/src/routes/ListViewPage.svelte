@@ -16,6 +16,8 @@
         type ScheduleResource,
         type StopResource,
     } from "@t-minus/shared";
+    import { Milestone } from "@lucide/svelte";
+    import { isLargeScreen } from "$lib/util/media.svelte";
 
     interface Props {
         routeOptions: RouteResource[];
@@ -46,13 +48,11 @@
     // (Can't be $derived because relation with selectedStop is two-way)
     let drawerOpen: boolean = $state(false);
 
-    function setSelectedStop(value?: StopResource) {
-        selectedStop = value;
-        // If selecting a stop, open the drawer
-        if (selectedStop) {
-            drawerOpen = true;
-        }
-    }
+    // Using $effect here as selectedStop could be changed by parent
+    $effect(() => {
+        // Open drawer if selecting a stop, close if deselecting
+        drawerOpen = selectedStop !== undefined;
+    });
 
     function setDrawerOpen(value: boolean) {
         drawerOpen = value;
@@ -64,7 +64,7 @@
 </script>
 
 <main>
-    <div class="route-view" in:fade>
+    <div class="route-view scroll-container" in:fade>
         <RoutePatternSelect
             {routeOptions}
             bind:selectedRoute
@@ -74,11 +74,11 @@
         {#await routeStops}
             <Loading />
         {:then stops}
-            <div class="route-stop-select" in:fade>
+            <div class="stop-list" in:fade>
                 <StopList
                     route={selectedRoute}
                     {stops}
-                    onSelectStop={setSelectedStop}
+                    onSelectStop={(stop) => (selectedStop = stop)}
                 />
             </div>
         {:catch}
@@ -86,43 +86,65 @@
         {/await}
     </div>
 
-    <Drawer.Root
-        shouldScaleBackground
-        bind:open={() => drawerOpen, setDrawerOpen}
-    >
-        <Drawer.Portal>
-            <Drawer.Overlay class="drawer-overlay-default" />
-            <Drawer.Content class="drawer-content-default">
-                <Drawer.Close class="drawer-close-default"
-                    ><div class="drawer-handle"></div></Drawer.Close
-                >
-                <!-- If there's a selected stop (there should be when drawer is open) -->
-                {#if selectedStop}
-                    <!-- Get list of expected arrivals -->
-                    {#await arrivals}
-                        <!-- Before arrivals are available, show with none -->
-                        <StopInfo stop={selectedStop} route={selectedRoute} />
-                    {:then arrivals}
-                        <!-- Show with the arrivals -->
-                        <StopInfo
-                            stop={selectedStop}
-                            route={selectedRoute}
-                            {arrivals}
-                            {alerts}
-                        />
-                    {/await}
-                {/if}
-            </Drawer.Content>
-        </Drawer.Portal>
-    </Drawer.Root>
+    {#snippet stopViewContent()}
+        <!-- If there's a selected stop -->
+        <!-- When using drawer, there always should be -->
+        {#if selectedStop}
+            <!-- Get list of expected arrivals -->
+            {#await arrivals}
+                <!-- Before arrivals are available, show with none -->
+                <StopInfo stop={selectedStop} route={selectedRoute} />
+            {:then arrivals}
+                <!-- Show with the arrivals -->
+                <StopInfo
+                    stop={selectedStop}
+                    route={selectedRoute}
+                    {arrivals}
+                    {alerts}
+                />
+            {/await}
+        {/if}
+    {/snippet}
+
+    <!-- On large screens, show to the side; on small, use drawer -->
+    <div class="side-info-panel">
+        {#if isLargeScreen() && selectedStop}
+            {@render stopViewContent()}
+        {:else}
+            <div class="small-message">
+                <Milestone
+                    size={48}
+                    color="var(--fg-primary)"
+                    aria-hidden="true"
+                />
+                <p>Select a stop for more info.</p>
+            </div>
+        {/if}
+    </div>
+
+    {#if !isLargeScreen()}
+        <Drawer.Root
+            shouldScaleBackground
+            bind:open={() => drawerOpen, setDrawerOpen}
+        >
+            <Drawer.Portal>
+                <Drawer.Overlay class="drawer-overlay-default" />
+                <Drawer.Content class="drawer-content-default">
+                    <Drawer.Close class="drawer-close-default"
+                        ><div class="drawer-handle"></div></Drawer.Close
+                    >
+                    {@render stopViewContent()}
+                </Drawer.Content>
+            </Drawer.Portal>
+        </Drawer.Root>
+    {/if}
 </main>
 
 <style>
     main {
         display: flex;
-        flex-direction: column;
         align-items: center;
-        padding: 0 12px 12px 12px;
+        justify-content: center;
     }
 
     .route-view {
@@ -131,12 +153,36 @@
         align-items: center;
         max-width: 480px;
         width: 100%;
+        padding: 0 24px 0 36px;
     }
 
-    .route-stop-select {
+    .stop-list {
         display: flex;
         flex-direction: column;
         width: 100%;
+    }
+
+    .side-info-panel {
+        display: none;
+    }
+
+    @media (min-width: 1024px) {
+        main {
+            height: 100%;
+            min-height: 0;
+        }
+        .route-view {
+            height: 100%;
+            overflow-y: auto;
+            overflow-x: clip;
+        }
+        .side-info-panel {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            height: 100%;
+            width: 100%;
+        }
     }
 
     .drawer-handle {

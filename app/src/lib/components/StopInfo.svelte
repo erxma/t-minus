@@ -5,7 +5,7 @@
     import RoutePill from "./common/RoutePill.svelte";
 
     import { CalendarClock, Clock, Radio } from "@lucide/svelte";
-    import { fade } from "svelte/transition";
+    import { fade, slide } from "svelte/transition";
 
     import { countdownText } from "$lib/util/formatting";
     import {
@@ -49,7 +49,7 @@
 </script>
 
 {#snippet noInfo(text: string)}
-    <div class="no-info">
+    <div class="small-message">
         <Clock size={48} color="var(--fg-primary)" />
         <p>{text}</p>
     </div>
@@ -72,7 +72,7 @@
             size="24"
         />
     </span>
-    <div class="content">
+    <div class="content scroll-container">
         {#if activeAlerts && activeAlerts.length > 0}
             <div in:fade|global><Alerts alerts={activeAlerts} /></div>
         {/if}
@@ -85,13 +85,13 @@
                 stop: StopResource,
                 arrivals: ArrivalResource[],
             )}
-                <li class="platform" transition:fade>
+                <li class="platform" transition:slide>
                     <span class="platform-name"
                         ><h2>{stop.platform_name}</h2></span
                     >
                     <ol>
                         {#each arrivals as arrival (arrival.id)}
-                            <li class="arrival">
+                            <li class="arrival" transition:slide>
                                 <span class="headsign">
                                     {#if arrival.route!.type_ === RouteType.COMMUTER_RAIL}
                                         <CommuterRailTripPill
@@ -191,6 +191,7 @@
 
 <style>
     .stop-info {
+        width: 100%;
         height: 100%;
         display: flex;
         flex-direction: column;
@@ -298,15 +299,5 @@
     .arrival-time > span {
         display: inline-flex;
         align-items: center;
-    }
-
-    .no-info {
-        display: flex;
-        flex-direction: column;
-        align-items: center;
-        font-size: larger;
-        padding: 1em;
-
-        text-align: center;
     }
 </style>

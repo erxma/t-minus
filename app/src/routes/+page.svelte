@@ -142,6 +142,7 @@
         selectedRoutePattern = value;
         routeStops = fetchPatternStops(selectedRoutePattern);
         updateSearchParams();
+        setSelectedStop(undefined);
     }
 
     async function setSelectedStop(value?: StopResource) {
@@ -149,6 +150,14 @@
 
         // If streaming is on...
         if (import.meta.env.VITE_LIVE_UPDATE_METHOD === "stream") {
+            // If there's currently a prediction stream open, stop listening
+            if (streamedPredictions) {
+                streamedPredictions.close();
+                streamedPredictions = undefined;
+                streamedAlerts!.close();
+                streamedAlerts = undefined;
+            }
+
             // If a stop was selected, start listening to predictions and alerts
             if (selectedStop) {
                 const predictionsEventSource = apiClient.listen(
@@ -177,12 +186,6 @@
                     "alert",
                     alertsEventSource,
                 );
-            } else if (streamedPredictions) {
-                // If deselecting, stop listening
-                streamedPredictions.close();
-                streamedPredictions = undefined;
-                streamedAlerts!.close();
-                streamedAlerts = undefined;
             }
         }
     }
