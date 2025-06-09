@@ -153,7 +153,7 @@
         align-items: center;
         max-width: 480px;
         width: 100%;
-        padding: 0 24px 0 36px;
+        padding: 0 12px 12px 12px;
     }
 
     .stop-list {
@@ -175,6 +175,7 @@
             height: 100%;
             overflow-y: auto;
             overflow-x: clip;
+            padding: 0 24px 0 36px;
         }
         .side-info-panel {
             display: flex;
