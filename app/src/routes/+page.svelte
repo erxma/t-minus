@@ -24,6 +24,9 @@
         | readonly Readonly<PredictionResource>[];
 
     let { data }: PageProps = $props();
+    const liveUpdateMethod =
+        import.meta.env.VITE_LIVE_UPDATE_METHOD ?? "stream";
+    const pollIntervalMs = import.meta.env.VITE_POLL_INTERVAL_MS ?? 5000;
 
     let selectedRoute: RouteResource = $state(data.initialRoute);
     let selectedDirectionId: number = $state(data.initialDirection);
@@ -96,31 +99,28 @@
     });
 
     // If polling...
-    if (import.meta.env.VITE_LIVE_UPDATE_METHOD === "poll") {
+    if (liveUpdateMethod === "poll") {
         $effect(() => {
             if (selectedStop) {
-                const pollInterval = setInterval(
-                    async () => {
-                        const predictions = await apiClient.fetch(
-                            "predictions",
-                            predictionsFetchParams,
+                const pollInterval = setInterval(async () => {
+                    const predictions = await apiClient.fetch(
+                        "predictions",
+                        predictionsFetchParams,
+                    );
+                    if (predictions.length > 0) {
+                        polledArrivals = predictions;
+                    } else {
+                        polledArrivals = await fetchStopSchedules(
+                            selectedStop?.parent_station?.id!,
+                            selectedRoute.id,
                         );
-                        if (predictions.length > 0) {
-                            polledArrivals = predictions;
-                        } else {
-                            polledArrivals = await fetchStopSchedules(
-                                selectedStop?.parent_station?.id!,
-                                selectedRoute.id,
-                            );
-                        }
+                    }
 
-                        polledAlerts = await apiClient.fetch(
-                            "alerts",
-                            alertsFetchParams,
-                        );
-                    },
-                    import.meta.env.VITE_POLL_INTERVAL_MS,
-                );
+                    polledAlerts = await apiClient.fetch(
+                        "alerts",
+                        alertsFetchParams,
+                    );
+                }, pollIntervalMs);
                 return () => clearInterval(pollInterval);
             }
         });
@@ -149,7 +149,7 @@
         selectedStop = value;
 
         // If streaming is on...
-        if (import.meta.env.VITE_LIVE_UPDATE_METHOD === "stream") {
+        if (liveUpdateMethod === "stream") {
             // If there's currently a prediction stream open, stop listening
             if (streamedPredictions) {
                 streamedPredictions.close();
