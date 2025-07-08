@@ -1,9 +1,10 @@
 <script lang="ts">
     import "$lib/global.css";
-    import { Accessibility, Slash } from "@lucide/svelte";
+    import { Accessibility, CircleHelp, Slash } from "@lucide/svelte";
+    import { WheelchairAccessibility } from "@t-minus/shared";
 
     interface Props {
-        wheelchairBoarding?: 0 | 1 | 2;
+        wheelchairBoarding?: WheelchairAccessibility;
         size?: string;
     }
 
@@ -11,18 +12,19 @@
 </script>
 
 <span class="accessibility">
-    {#if wheelchairBoarding === undefined || wheelchairBoarding === 0}
-        <span aria-hidden="true">?</span><span class="visually-hidden"
-            >No wheelchair boarding information</span
-        >
-    {:else if wheelchairBoarding === 1}
-        <span class="accessible" aria-hidden="true">
+    {#if wheelchairBoarding === undefined || wheelchairBoarding === WheelchairAccessibility.NO_INFO}
+        <span class="icon" aria-hidden="true" style:--icon-bg="var(--muted)">
+            <CircleHelp color="var(--fg-primary)" {size} />
+        </span>
+        <span class="visually-hidden">No wheelchair boarding information</span>
+    {:else if wheelchairBoarding === WheelchairAccessibility.ACCESSIBLE}
+        <span class="icon" aria-hidden="true" style:--icon-bg="#0076ff">
             <Accessibility color="white" {size} />
         </span>
 
         <span class="visually-hidden">Accessible stop</span>
     {:else}
-        <span class="inaccessible" aria-hidden="true">
+        <span class="icon" aria-hidden="true" style:--icon-bg="var(--muted)">
             <Accessibility color="var(--fg-primary)" {size} />
             <span class="icon-crossout">
                 <Slash color="var(--fg-primary)" {size} />
@@ -33,16 +35,9 @@
 </span>
 
 <style>
-    .accessible {
+    .icon {
         padding: 0.2em;
-        background-color: #0076ff;
-        border-radius: 6px;
-        display: inline-flex;
-    }
-
-    .inaccessible {
-        padding: 0.2em;
-        background-color: var(--muted);
+        background-color: var(--icon-bg);
         border-radius: 6px;
         display: inline-flex;
     }
