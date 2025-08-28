@@ -14,5 +14,12 @@
   },
   "devDependencies": {
     "concurrently": "^9.1.2"
+  },
+  "overrides": {
+    "@t-minus/app": {
+      "@sveltejs/kit": {
+        "cookie": "^0.7.0"
+      }
+    }
   }
 }
