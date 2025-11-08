@@ -1,3 +1,4 @@
+import { DISABLE_SERVER_CACHE } from "$env/static/private";
 import { TTL_CACHE } from "$lib/server/cache";
 import { apiClient } from "$lib/util/api-client";
 import { error, type RequestHandler } from "@sveltejs/kit";
@@ -12,14 +13,16 @@ export const GET: RequestHandler = async ({ url }) => {
 
     // Check cache
     const cacheKey = `trip-stops/${tripId}`;
-    const cached = TTL_CACHE.get(cacheKey);
-    if (cached) {
-        return new Response(JSON.stringify(cached), {
-            headers: {
-                "Content-Type": "application/json",
-                "cache-control": `public, max-age=${TTL_CACHE.getRemainingTTL(cacheKey) / 1000}`,
-            },
-        });
+    if (!DISABLE_SERVER_CACHE) {
+        const cached = TTL_CACHE.get(cacheKey);
+        if (cached) {
+            return new Response(JSON.stringify(cached), {
+                headers: {
+                    "Content-Type": "application/json",
+                    "cache-control": `public, max-age=${TTL_CACHE.getRemainingTTL(cacheKey) / 1000}`,
+                },
+            });
+        }
     }
 
     const response = await apiClient.fetch("trips", {
@@ -34,9 +37,11 @@ export const GET: RequestHandler = async ({ url }) => {
 
     const stops = response[0].stops!;
 
-    TTL_CACHE.set(cacheKey, stops, {
-        ttl: CACHE_TTL_SECS * 1000,
-    });
+    if (!DISABLE_SERVER_CACHE) {
+        TTL_CACHE.set(cacheKey, stops, {
+            ttl: CACHE_TTL_SECS * 1000,
+        });
+    }
 
     return new Response(JSON.stringify(stops), {
         headers: {

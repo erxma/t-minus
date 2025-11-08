@@ -2,20 +2,23 @@ import { apiClient } from "$lib/util/api-client";
 import { TTL_CACHE } from "$lib/server/cache";
 import type { RequestHandler } from "@sveltejs/kit";
 import { RouteType } from "@t-minus/shared";
+import { DISABLE_SERVER_CACHE } from "$env/static/private";
 
 const CACHE_TTL_SECS = 3600; // 1 hour
 
 export const GET: RequestHandler = async ({ fetch }) => {
     // Check cache
     const cacheKey = "route-options";
-    const cached = TTL_CACHE.get(cacheKey);
-    if (cached) {
-        return new Response(JSON.stringify(cached), {
-            headers: {
-                "Content-Type": "application/json",
-                "cache-control": `public, max-age=${TTL_CACHE.getRemainingTTL(cacheKey) / 1000}`,
-            },
-        });
+    if (!DISABLE_SERVER_CACHE) {
+        const cached = TTL_CACHE.get(cacheKey);
+        if (cached) {
+            return new Response(JSON.stringify(cached), {
+                headers: {
+                    "Content-Type": "application/json",
+                    "cache-control": `public, max-age=${TTL_CACHE.getRemainingTTL(cacheKey) / 1000}`,
+                },
+            });
+        }
     }
 
     const routeOptions = await apiClient.fetch(
@@ -64,9 +67,11 @@ export const GET: RequestHandler = async ({ fetch }) => {
         );
     }
 
-    TTL_CACHE.set(cacheKey, routeOptions, {
-        ttl: CACHE_TTL_SECS * 1000,
-    });
+    if (!DISABLE_SERVER_CACHE) {
+        TTL_CACHE.set(cacheKey, routeOptions, {
+            ttl: CACHE_TTL_SECS * 1000,
+        });
+    }
 
     return new Response(JSON.stringify(routeOptions), {
         headers: {
