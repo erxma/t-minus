@@ -97,7 +97,7 @@
                             class="select-trigger-pattern"
                         >
                             <span
-                                class="select-trigger-inner select-trigger-inner-pattern"
+                                class="select-trigger-inner select-trigger-inner-pattern pattern-name"
                             >
                                 <b>{selectedRoutePattern.name}</b>
                                 <ChevronDown />
@@ -117,7 +117,9 @@
                         </Select.Portal>
                     </Select.Root>
                 {:else}
-                    <span><b>{selectedRoutePattern.name}</b></span>
+                    <span class="pattern-name"
+                        ><b>{selectedRoutePattern.name}</b></span
+                    >
                 {/if}
             </div>
         </div>
@@ -156,6 +158,10 @@
         font-size: var(--font-size-m);
         display: flex;
         flex-direction: column;
+    }
+
+    .pattern-name {
+        text-align: left;
     }
 
     .select-trigger-inner-pattern,

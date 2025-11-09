@@ -1,11 +1,13 @@
 import type { RouteResource } from "@t-minus/shared";
-import type { PageLoad } from "./$types";
 import { redirect } from "@sveltejs/kit";
+import type { PageLoad } from "./$types";
 
-export const load: PageLoad = async ({ url, fetch }) => {
-    let routeOptions: RouteResource[] = await fetch("/api/route-options").then(
-        (r) => r.json(),
-    );
+export const load: PageLoad = async ({ url, fetch, params }) => {
+    let { routeType } = params;
+
+    let routeOptions: RouteResource[] = await fetch(
+        `/api/route-options/${routeType}`,
+    ).then((r) => r.json());
 
     let routeParam = url.searchParams.get("route");
     let directionParam = url.searchParams.get("direction");

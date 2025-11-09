@@ -1,6 +1,6 @@
 <script lang="ts">
     import "$lib/global.css";
-    import type { RouteResource } from "@t-minus/shared";
+    import { RouteType, type RouteResource } from "@t-minus/shared";
 
     interface Props {
         route: RouteResource;
@@ -30,6 +30,10 @@
     }: Props = $props();
 
     let lineMainName = $derived.by(() => {
+        if (route.type_ === RouteType.BUS) {
+            return route.id;
+        }
+
         if (abbreviate) {
             if (route.id.startsWith("Green")) {
                 return "GL";
@@ -65,6 +69,7 @@
     aria-label={route.long_name}
     style:--color-underneath={colorUnderneath}
     style:--size={size}
+    style:--text-color="#{route.text_color ?? '111'}"
 >
     <!-- Colored background pill with line main name inside -->
     <!-- Special case for Mattapan "M" - use a circle shape instead -->
@@ -87,7 +92,7 @@
         display: flex;
         font-size: var(--size);
         height: 1.6em;
-        color: white;
+        color: var(--text-color);
     }
 
     .route-pill > span {

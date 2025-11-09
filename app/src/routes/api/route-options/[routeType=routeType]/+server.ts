@@ -6,9 +6,11 @@ import { DISABLE_SERVER_CACHE } from "$env/static/private";
 
 const CACHE_TTL_SECS = 3600; // 1 hour
 
-export const GET: RequestHandler = async ({ fetch }) => {
+export const GET: RequestHandler = async ({ fetch, params }) => {
+    const { routeType } = params;
+
     // Check cache
-    const cacheKey = "route-options";
+    const cacheKey = `route-options/${routeType}`;
     if (!DISABLE_SERVER_CACHE) {
         const cached = TTL_CACHE.get(cacheKey);
         if (cached) {
@@ -21,11 +23,21 @@ export const GET: RequestHandler = async ({ fetch }) => {
         }
     }
 
+    let routeTypeFilter;
+    switch (routeType) {
+        case "subway":
+            routeTypeFilter = [RouteType.HEAVY_RAIL, RouteType.LIGHT_RAIL];
+            break;
+        case "cr":
+            routeTypeFilter = [RouteType.COMMUTER_RAIL];
+            break;
+    }
+
     const routeOptions = await apiClient.fetch(
         "routes",
         {
             filters: {
-                type: [RouteType.LIGHT_RAIL, RouteType.HEAVY_RAIL],
+                type: routeTypeFilter,
             },
             fields: {
                 route: [
