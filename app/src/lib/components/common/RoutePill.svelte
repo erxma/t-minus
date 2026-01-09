@@ -31,7 +31,7 @@
 
     let lineMainName = $derived.by(() => {
         if (route.type_ === RouteType.BUS) {
-            return route.id;
+            return route.short_name;
         }
 
         if (abbreviate) {

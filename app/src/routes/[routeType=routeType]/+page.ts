@@ -17,8 +17,15 @@ export const load: PageLoad = async ({ url, fetch, params }) => {
     // If route param is unset, or not an option
     if (!initialRoute) {
         // Redirect with route defaulted to first option
+        let defaultRoute;
+        if (routeType === "bus") {
+            defaultRoute = "1";
+        } else {
+            defaultRoute = routeOptions[0].id;
+        }
+
         const newURL = new URL(url);
-        newURL.searchParams.set("route", routeOptions[0].id);
+        newURL.searchParams.set("route", defaultRoute);
         redirect(307, newURL);
     }
 

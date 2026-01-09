@@ -31,6 +31,8 @@ export const GET: RequestHandler = async ({ fetch, params }) => {
         case "cr":
             routeTypeFilter = [RouteType.COMMUTER_RAIL];
             break;
+        case "bus":
+            routeTypeFilter = [RouteType.BUS];
     }
 
     const routeOptions = await apiClient.fetch(
@@ -47,6 +49,7 @@ export const GET: RequestHandler = async ({ fetch, params }) => {
                     "direction_names",
                     "long_name",
                     "short_name",
+                    "type",
                 ],
             },
             include: ["route_patterns"],
@@ -57,12 +60,13 @@ export const GET: RequestHandler = async ({ fetch, params }) => {
     // Current JSON:API flattening doesn't recurse, to avoid include loops,
     // so fetch route patterns with representative trips separately here.
     // This happens to be a good opportunity to filter by canonical
+    // (except for bus, where all are shown)
     const routePatterns = await apiClient.fetch(
         "route_patterns",
         {
             filters: {
                 route: routeOptions.map((r) => r.id),
-                canonical: true,
+                canonical: routeType === "bus" ? undefined : true,
             },
             fields: {
                 route_pattern: ["direction_id", "name", "sort_order"],
