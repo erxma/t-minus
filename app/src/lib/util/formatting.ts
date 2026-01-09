@@ -41,15 +41,16 @@ export function predictionCountdownText(
 
     if (
         prediction.update_type === "MID_TRIP" &&
-        prediction.vehicle?.current_stop_sequence! > prediction.stop_sequence!
+        prediction.vehicle != undefined &&
+        prediction.vehicle.current_stop_sequence! > prediction.stop_sequence!
     ) {
         // If vehicle has already passed (is on the prediction's trip, not reverse,
         // and stop sequence is greater), show "Departed"
         return "Departed";
     } else if (
         time_left_secs <= 90 &&
-        prediction.vehicle!.current_status === "STOPPED_AT" &&
-        prediction.stop_sequence === prediction.vehicle!.current_stop_sequence
+        prediction.vehicle?.current_status === "STOPPED_AT" &&
+        prediction.stop_sequence === prediction.vehicle?.current_stop_sequence
     ) {
         // If seconds <= 90, and the associated vehicle is stopped at the same stop...
         if (prediction.departure_time) {
