@@ -3,9 +3,18 @@
 </script>
 
 <div>
-    <a href="./subway" class="button-default" id="link-subway">Subway</a>
-    <a href="./bus" class="button-default" id="link-bus">Bus</a>
-    <a href="./cr" class="button-default" id="link-cr">Commuter Rail</a>
+    <a
+        href="./subway"
+        class="button-default"
+        id="link-subway"
+        data-sveltekit-reload>Subway</a
+    >
+    <a href="./bus" class="button-default" id="link-bus" data-sveltekit-reload
+        >Bus</a
+    >
+    <a href="./cr" class="button-default" id="link-cr" data-sveltekit-reload
+        >Commuter Rail</a
+    >
 </div>
 
 <style>
