@@ -16,7 +16,7 @@
     import dayjs from "dayjs";
     import { page } from "$app/state";
     import type { PageProps } from "./$types";
-    import { replaceState } from "$app/navigation";
+    import { goto } from "$app/navigation";
     import Loading from "$lib/components/common/Loading.svelte";
     import RoutePatternSelect from "$lib/components/route/RoutePatternSelect.svelte";
     import StopList from "$lib/components/route/StopList.svelte";
@@ -32,15 +32,6 @@
 
     let { data }: PageProps = $props();
 
-    let selectedRoute: RouteResource = $state(data.initialRoute);
-    let selectedDirectionId: number = $state(data.initialDirection);
-    let selectedRoutePattern: RoutePatternResource = $state(
-        data.initialPattern,
-    );
-    let routeStops: StopResource[] | Promise<StopResource[]> = $state(
-        data.initialStops,
-    );
-
     let selectedStop: StopResource | undefined = $state();
 
     let predictions: MbtaStreamedCollection<PredictionResource> | undefined =
@@ -55,7 +46,7 @@
         } else {
             return fetchStopSchedules(
                 selectedStop?.parent_station?.id!,
-                selectedRoute.id,
+                data.route.id,
             );
         }
     });
@@ -96,21 +87,36 @@
     });
 
     async function setSelectedRoute(value: RouteResource) {
-        selectedRoute = value;
-        routeStops = fetchPatternStops(selectedRoutePattern);
-        updateSearchParams();
+        const params = new URLSearchParams({ route: value.id });
+        goto(`?${params}`, {
+            replaceState: true,
+            noScroll: true,
+            keepFocus: true,
+        });
+        setSelectedStop(undefined);
     }
 
     async function setSelectedDirectionId(value: number) {
-        selectedDirectionId = value;
-        routeStops = fetchPatternStops(selectedRoutePattern);
-        updateSearchParams();
+        const params = new URLSearchParams({
+            route: data.route.id,
+            direction: value.toString(),
+        });
+        goto(`?${params}`, {
+            replaceState: true,
+            noScroll: true,
+            keepFocus: true,
+        });
+        setSelectedStop(undefined);
     }
 
     async function setSelectedRoutePattern(value: RoutePatternResource) {
-        selectedRoutePattern = value;
-        routeStops = fetchPatternStops(selectedRoutePattern);
-        updateSearchParams();
+        const url = new URL(page.url);
+        url.searchParams.set("pattern", value.id);
+        goto(url, {
+            replaceState: true,
+            noScroll: true,
+            keepFocus: true,
+        });
         setSelectedStop(undefined);
     }
 
@@ -153,27 +159,11 @@
         }
     }
 
-    async function fetchPatternStops(
-        routePattern: RoutePatternResource,
-    ): Promise<StopResource[]> {
-        return await fetch(
-            `/api/trip-stops?trip=${routePattern.representative_trip?.id}`,
-        ).then((r) => r.json());
-    }
-
     async function fetchStopSchedules(
         stopId: string,
         routeId: string,
     ): Promise<readonly ScheduleResource[]> {
         return await fetchNextSchedules(apiClient, stopId, dayjs(), routeId);
-    }
-
-    function updateSearchParams() {
-        const url = new URL(page.url);
-        url.searchParams.set("route", selectedRoute.id);
-        url.searchParams.set("direction", selectedDirectionId.toString());
-        url.searchParams.set("pattern", selectedRoutePattern.id);
-        replaceState(url, {});
     }
 
     // ====== DRAWER ======
@@ -197,20 +187,20 @@
     <div class="route-view scroll-container" in:fade>
         <RoutePatternSelect
             routeOptions={data.routeOptions}
-            bind:selectedRoute={() => selectedRoute, setSelectedRoute}
+            bind:selectedRoute={() => data.route, setSelectedRoute}
             bind:selectedDirectionId={
-                () => selectedDirectionId, setSelectedDirectionId
+                () => data.direction, setSelectedDirectionId
             }
             bind:selectedRoutePattern={
-                () => selectedRoutePattern, setSelectedRoutePattern
+                () => data.pattern, setSelectedRoutePattern
             }
         />
-        {#await routeStops}
+        {#await data.stops}
             <Loading />
         {:then stops}
             <div class="stop-list" in:fade>
                 <StopList
-                    route={selectedRoute}
+                    route={data.route}
                     {stops}
                     onSelectStop={setSelectedStop}
                 />
@@ -227,12 +217,12 @@
             <!-- Get list of expected arrivals -->
             {#await arrivals}
                 <!-- Before arrivals are available, show with none -->
-                <StopInfo stop={selectedStop} route={selectedRoute} />
+                <StopInfo stop={selectedStop} route={data.route} />
             {:then arrivals}
                 <!-- Show with the arrivals -->
                 <StopInfo
                     stop={selectedStop}
-                    route={selectedRoute}
+                    route={data.route}
                     {arrivals}
                     alerts={alerts?.data}
                 />

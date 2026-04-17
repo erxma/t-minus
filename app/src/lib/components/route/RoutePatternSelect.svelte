@@ -42,7 +42,6 @@
 
     function onReverseDirection() {
         selectedDirectionId = selectedDirectionId === 0 ? 1 : 0;
-        selectedRoutePattern = routePatternOptions[0];
     }
 </script>
 
@@ -51,8 +50,6 @@
         type="single"
         onValueChange={(v) => {
             selectedRoute = routeOptions.find((route) => route.id === v)!;
-            selectedDirectionId = 0;
-            selectedRoutePattern = routePatternOptions[0];
         }}
     >
         <Select.Trigger aria-label="Select route">

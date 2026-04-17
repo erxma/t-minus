@@ -1,4 +1,4 @@
-import type { RouteResource } from "@t-minus/shared";
+import type { RouteResource, StopResource } from "@t-minus/shared";
 import { redirect } from "@sveltejs/kit";
 import type { PageLoad } from "./$types";
 
@@ -13,9 +13,9 @@ export const load: PageLoad = async ({ url, fetch, params }) => {
     let directionParam = url.searchParams.get("direction");
     let patternParam = url.searchParams.get("pattern");
 
-    const initialRoute = routeOptions.find((r) => r.id === routeParam);
+    const route = routeOptions.find((r) => r.id === routeParam);
     // If route param is unset, or not an option
-    if (!initialRoute) {
+    if (!route) {
         // Redirect with route defaulted to first option
         let defaultRoute;
         if (routeType === "bus") {
@@ -29,30 +29,33 @@ export const load: PageLoad = async ({ url, fetch, params }) => {
         redirect(307, newURL);
     }
 
-    let initialDirection = Number(directionParam);
+    let direction = Number(directionParam);
     // If direction is anything other than 0 or 1, default to 0
-    if (initialDirection !== 0 && initialDirection !== 1) {
-        initialDirection = 0;
+    if (direction !== 0 && direction !== 1) {
+        direction = 0;
     }
 
-    let initialPattern = initialRoute.route_patterns?.find(
-        (pattern) => pattern.id === patternParam,
+    let pattern = route.route_patterns?.find(
+        (pattern) =>
+            pattern.id === patternParam && pattern.direction_id === direction,
     );
     // If route pattern param is unset, or not an option
-    if (!initialPattern) {
+    if (!pattern) {
         // Default to first option
-        initialPattern = initialRoute.route_patterns![0];
+        pattern = route.route_patterns!.find(
+            (pattern) => pattern.direction_id === direction,
+        )!;
     }
 
-    const initialStops = await fetch(
-        `/api/trip-stops?trip=${initialPattern.representative_trip?.id}`,
+    const stops: Promise<StopResource[]> = fetch(
+        `/api/trip-stops?trip=${pattern.representative_trip?.id}`,
     ).then((r) => r.json());
 
     return {
         routeOptions,
-        initialRoute,
-        initialDirection,
-        initialPattern,
-        initialStops,
+        route,
+        direction,
+        pattern,
+        stops,
     };
 };
