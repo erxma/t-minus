@@ -4,7 +4,7 @@
     import Loading from "./common/Loading.svelte";
     import RoutePill from "./common/RoutePill.svelte";
 
-    import { CalendarClock, Clock, Radio } from "@lucide/svelte";
+    import { CalendarClock, Clock, ClockFading, Radio } from "@lucide/svelte";
     import { fade, slide } from "svelte/transition";
 
     import { countdownText } from "$lib/util/formatting";
@@ -20,6 +20,11 @@
     import Alerts from "./Alerts.svelte";
     import AlertIcon from "./common/AlertIcon.svelte";
     import CommuterRailTripPill from "./common/CommuterRailTripPill.svelte";
+
+    import dayjs from "dayjs";
+    import RelativeTime from "dayjs/plugin/relativeTime";
+    import { onMount } from "svelte";
+    dayjs.extend(RelativeTime);
 
     interface Props {
         stop: StopResource;
@@ -46,6 +51,23 @@
                 entityIsAffectedByAlert({ route: route.id }, alert),
             ),
     );
+
+    // Relative timestamp for most recent update to arrivals or alerts
+    const lastUpdateTime = $derived.by(() => {
+        arrivals;
+        activeAlerts;
+        return dayjs();
+    });
+    let now = $state(dayjs());
+    // Update now every 10 seconds, and also whenever last update time changes
+    onMount(() => {
+        const interval = setInterval(() => (now = dayjs()), 10000);
+        return () => clearInterval(interval);
+    });
+    $effect(() => {
+        lastUpdateTime;
+        now = dayjs();
+    });
 </script>
 
 {#snippet noInfo(text: string)}
@@ -73,6 +95,16 @@
         />
     </span>
     <div class="content scroll-container">
+        <!-- Only show last update time once some info has actually initialized -->
+        {#if activeAlerts || arrivals}
+            <p class="last-updated-text">
+                <ClockFading
+                    size="var(--font-size-m)"
+                    color="var(--fg-primary)"
+                />
+                Last updated {lastUpdateTime.from(now)}
+            </p>
+        {/if}
         {#if activeAlerts && activeAlerts.length > 0}
             <div in:fade|global><Alerts alerts={activeAlerts} /></div>
         {/if}
@@ -226,11 +258,20 @@
     .content {
         display: flex;
         flex-direction: column;
-        gap: 24px;
+        gap: 12px;
         overflow-y: scroll;
         padding: 12px;
         height: 100%;
         padding-bottom: 64px;
+    }
+
+    .last-updated-text {
+        font-size: var(--font-size-s);
+        margin: 0 0 0 10px;
+        display: flex;
+        justify-content: right;
+        align-items: center;
+        gap: 0.4em;
     }
 
     ol {
