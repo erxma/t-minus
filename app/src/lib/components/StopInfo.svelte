@@ -92,7 +92,9 @@
                     <ol>
                         <!-- Filter to only show preds with an arrival/departure time -->
                         <!-- TODO: This can be changed once showing cancelled status -->
-                        {#each arrivals.filter((a) => a.arrival_time || a.departure_time) as arrival (arrival.id)}
+                        {#each arrivals
+                            .filter((a) => a.arrival_time || a.departure_time)
+                            .slice(0, 5) as arrival (arrival.id)}
                             <li class="arrival" transition:slide>
                                 <span class="headsign">
                                     {#if arrival.route!.type_ === RouteType.COMMUTER_RAIL}

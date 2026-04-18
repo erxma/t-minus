@@ -56,7 +56,7 @@
     const predictionsFetchParams = $derived({
         sort: "time",
         page: {
-            limit: 10,
+            limit: 40,
         },
         fields: {
             prediction: [
