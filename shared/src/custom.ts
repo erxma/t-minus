@@ -120,6 +120,7 @@ export async function fetchNextSchedules(
                 RouteType.HEAVY_RAIL,
                 RouteType.LIGHT_RAIL,
                 RouteType.COMMUTER_RAIL,
+                RouteType.BUS,
             ],
         },
         fields: {

@@ -45,7 +45,7 @@
             return Promise.resolve(predictions.data);
         } else {
             return fetchStopSchedules(
-                selectedStop?.parent_station?.id!,
+                selectedStop!.parent_station?.id ?? selectedStop!.id,
                 data.route.id,
             );
         }
