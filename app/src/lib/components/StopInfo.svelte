@@ -6,14 +6,11 @@
     import RoutePill from "./common/RoutePill.svelte";
 
     import {
-        Bus,
         CalendarClock,
         ChevronDown,
         Clock,
         ClockFading,
         Radio,
-        Ship,
-        TramFront,
     } from "@lucide/svelte";
     import { fade, slide } from "svelte/transition";
 
@@ -35,6 +32,7 @@
     import RelativeTime from "dayjs/plugin/relativeTime";
     import { onMount } from "svelte";
     import { Collapsible } from "bits-ui";
+    import VehicleCarriages from "./vehicles/VehicleCarriages.svelte";
     dayjs.extend(RelativeTime);
 
     interface Props {
@@ -155,7 +153,7 @@
                                                 <RoutePill
                                                     route={arrival.route!}
                                                     abbreviate={true}
-                                                    colorUnderneath="var(--surface)"
+                                                    colorUnderneath="var(--bg-primary)"
                                                     size="var(--font-size-m)"
                                                 />
                                             {/if}
@@ -205,35 +203,28 @@
                                         {/key}
                                     </div>
                                     <!-- Collapsible portion -->
-                                    <Collapsible.Content>
-                                        <div class="arrival-extras-row">
-                                            <!-- Vehicle info -->
-                                            {#if arrival.type === "prediction"}
-                                                <!-- Icon corresponding to type of vehicle/route -->
-                                                {#if arrival.route!.type_ === RouteType.BUS}
-                                                    <Bus />
-                                                {:else if arrival.route!.type_ === RouteType.FERRY}
-                                                    <Ship />
-                                                {:else}
-                                                    <TramFront />
-                                                {/if}
-                                                <!-- Carriage list (e.g. subway), single vehicle's label (e.g. bus), or N/A -->
-                                                {#if arrival.vehicle}
-                                                    {#if arrival.vehicle.carriages?.length}
-                                                        {arrival.vehicle.carriages
-                                                            .map(
-                                                                (car) =>
-                                                                    car.label,
-                                                            )
-                                                            .join("-")}
-                                                    {:else}
-                                                        {arrival.vehicle.label}
+                                    <Collapsible.Content forceMount>
+                                        {#snippet child({ props, open })}
+                                            {#if open}
+                                                <div
+                                                    {...props}
+                                                    transition:slide
+                                                    class="arrival-extras-row"
+                                                >
+                                                    <!-- Vehicle info -->
+                                                    {#if arrival.type === "prediction"}
+                                                        {#if arrival.vehicle}
+                                                            <VehicleCarriages
+                                                                vehicle={arrival.vehicle}
+                                                                route={arrival.route!}
+                                                            />
+                                                        {:else}
+                                                            N/A
+                                                        {/if}
                                                     {/if}
-                                                {:else}
-                                                    N/A
-                                                {/if}
+                                                </div>
                                             {/if}
-                                        </div>
+                                        {/snippet}
                                     </Collapsible.Content>
                                 </Collapsible.Root>
                             </li>
@@ -397,7 +388,7 @@
         align-items: center;
         gap: 0.2em;
 
-        padding-left: 0.2em;
+        margin-top: 12px;
     }
 
     .headsign {

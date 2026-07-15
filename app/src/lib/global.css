@@ -101,7 +101,7 @@ button {
   right: 0;
   bottom: 0;
   height: 75%;
-  background-color: var(--surface);
+  background-color: var(--bg-primary);
   z-index: var(--z-index-overlay);
 }
 
