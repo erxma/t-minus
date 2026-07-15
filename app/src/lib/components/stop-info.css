@@ -1,0 +1,11 @@
+[data-collapsible-trigger] {
+    background: none;
+    border: none;
+    display: flex;
+    transition: rotate 0.1s;
+    color: var(--fg-primary);
+}
+
+[data-collapsible-trigger][data-state="open"] {
+    rotate: 180deg;
+}

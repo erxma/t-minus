@@ -1,10 +1,20 @@
 <script lang="ts">
     import "$lib/global.css";
+    import "./stop-info.css";
     import AccessibilityIcon from "./common/AccessibilityIcon.svelte";
     import Loading from "./common/Loading.svelte";
     import RoutePill from "./common/RoutePill.svelte";
 
-    import { CalendarClock, Clock, ClockFading, Radio } from "@lucide/svelte";
+    import {
+        Bus,
+        CalendarClock,
+        ChevronDown,
+        Clock,
+        ClockFading,
+        Radio,
+        Ship,
+        TramFront,
+    } from "@lucide/svelte";
     import { fade, slide } from "svelte/transition";
 
     import { countdownText } from "$lib/util/formatting";
@@ -24,6 +34,7 @@
     import dayjs from "dayjs";
     import RelativeTime from "dayjs/plugin/relativeTime";
     import { onMount } from "svelte";
+    import { Collapsible } from "bits-ui";
     dayjs.extend(RelativeTime);
 
     interface Props {
@@ -128,55 +139,103 @@
                             .filter((a) => a.arrival_time || a.departure_time)
                             .slice(0, 5) as arrival (arrival.id)}
                             <li class="arrival" transition:slide>
-                                <span class="headsign">
-                                    {#if arrival.route!.type_ === RouteType.COMMUTER_RAIL}
-                                        <CommuterRailTripPill
-                                            trip={arrival.trip!}
-                                            route={arrival.route!}
-                                            size="var(--font-size-m)"
-                                        />
-                                    {:else}
-                                        <RoutePill
-                                            route={arrival.route!}
-                                            abbreviate={true}
-                                            colorUnderneath="var(--surface)"
-                                            size="var(--font-size-m)"
-                                        />
-                                    {/if}
-                                    {arrival.trip!.headsign}
-                                    <!-- If no departure time, passengers can't board.
-                                     Exception is CR predictions sometimes have neither time; typically with a status.
-                                     If also no times and no status, stop will not be made. -->
-                                    <!-- TODO: When stop won't be made, should refer to schedule relationship  -->
-                                    {#if !arrival.departure_time && arrival.arrival_time}(drop-off){/if}
-                                </span>
-                                {#key countdownText(arrival)}
-                                    <span
-                                        class="arrival-time"
-                                        in:fade={{ duration: 800 }}
-                                    >
-                                        {#if arrival.type === "prediction"}
+                                <!-- Arrival entry can be expanded to show more details -->
+                                <Collapsible.Root>
+                                    <!-- Always visible main portion -->
+                                    <div class="arrival-main-row">
+                                        <!-- e.g. "<RL pill> Braintree" -->
+                                        <span class="headsign">
+                                            {#if arrival.route!.type_ === RouteType.COMMUTER_RAIL}
+                                                <CommuterRailTripPill
+                                                    trip={arrival.trip!}
+                                                    route={arrival.route!}
+                                                    size="var(--font-size-m)"
+                                                />
+                                            {:else}
+                                                <RoutePill
+                                                    route={arrival.route!}
+                                                    abbreviate={true}
+                                                    colorUnderneath="var(--surface)"
+                                                    size="var(--font-size-m)"
+                                                />
+                                            {/if}
+                                            {arrival.trip!.headsign}
+                                            <!-- If no departure time, passengers can't board, show "(drop-off)"
+                                                Exception is CR predictions sometimes have neither time; typically with a status.
+                                                If also no times and no status, stop will not be made. -->
+                                            <!-- TODO: When stop won't be made, should refer to schedule relationship  -->
+                                            {#if !arrival.departure_time && arrival.arrival_time}(drop-off){/if}
+                                        </span>
+                                        <!-- e.g. "<live icon> 5 min", "<schedule icon> 9:00 AM" -->
+                                        {#key countdownText(arrival)}
                                             <span
-                                                aria-hidden="true"
-                                                title="Live Prediction"
-                                                ><Radio /></span
+                                                class="arrival-time"
+                                                in:fade={{ duration: 800 }}
                                             >
-                                            <span class="visually-hidden"
-                                                >Live prediction</span
-                                            >
-                                        {:else}
-                                            <span
-                                                aria-hidden="true"
-                                                title="Scheduled"
-                                                ><CalendarClock /></span
-                                            >
-                                            <span class="visually-hidden"
-                                                >Scheduled</span
-                                            >
-                                        {/if}
-                                        <span>{countdownText(arrival)}</span>
-                                    </span>
-                                {/key}
+                                                {#if arrival.type === "prediction"}
+                                                    <span
+                                                        aria-hidden="true"
+                                                        title="Live Prediction"
+                                                        ><Radio /></span
+                                                    >
+                                                    <span
+                                                        class="visually-hidden"
+                                                        >Live prediction</span
+                                                    >
+                                                {:else}
+                                                    <span
+                                                        aria-hidden="true"
+                                                        title="Scheduled"
+                                                        ><CalendarClock /></span
+                                                    >
+                                                    <span
+                                                        class="visually-hidden"
+                                                        >Scheduled</span
+                                                    >
+                                                {/if}
+                                                <span
+                                                    >{countdownText(
+                                                        arrival,
+                                                    )}</span
+                                                >
+                                                <Collapsible.Trigger>
+                                                    <ChevronDown />
+                                                </Collapsible.Trigger>
+                                            </span>
+                                        {/key}
+                                    </div>
+                                    <!-- Collapsible portion -->
+                                    <Collapsible.Content>
+                                        <div class="arrival-extras-row">
+                                            <!-- Vehicle info -->
+                                            {#if arrival.type === "prediction"}
+                                                <!-- Icon corresponding to type of vehicle/route -->
+                                                {#if arrival.route!.type_ === RouteType.BUS}
+                                                    <Bus />
+                                                {:else if arrival.route!.type_ === RouteType.FERRY}
+                                                    <Ship />
+                                                {:else}
+                                                    <TramFront />
+                                                {/if}
+                                                <!-- Carriage list (e.g. subway), single vehicle's label (e.g. bus), or N/A -->
+                                                {#if arrival.vehicle}
+                                                    {#if arrival.vehicle.carriages?.length}
+                                                        {arrival.vehicle.carriages
+                                                            .map(
+                                                                (car) =>
+                                                                    car.label,
+                                                            )
+                                                            .join("-")}
+                                                    {:else}
+                                                        {arrival.vehicle.label}
+                                                    {/if}
+                                                {:else}
+                                                    N/A
+                                                {/if}
+                                            {/if}
+                                        </div>
+                                    </Collapsible.Content>
+                                </Collapsible.Root>
                             </li>
                         {/each}
                     </ol>
@@ -318,13 +377,27 @@
     .arrival {
         padding: 0.3em 0.7em;
         display: flex;
-        justify-content: space-between;
+        flex-direction: column;
+        gap: 6px;
 
         font-size: var(--font-size-m);
     }
 
     .arrival:not(:last-child) {
         border-bottom: var(--border-primary);
+    }
+
+    .arrival-main-row {
+        display: flex;
+        justify-content: space-between;
+    }
+
+    .arrival-extras-row {
+        display: flex;
+        align-items: center;
+        gap: 0.2em;
+
+        padding-left: 0.2em;
     }
 
     .headsign {
