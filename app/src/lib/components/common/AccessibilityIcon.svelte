@@ -1,6 +1,6 @@
 <script lang="ts">
     import "$lib/global.css";
-    import { Accessibility, CircleHelp, Slash } from "@lucide/svelte";
+    import { Accessibility, CircleQuestionMark, Slash } from "@lucide/svelte";
     import { WheelchairAccessibility } from "@t-minus/shared";
 
     interface Props {
@@ -14,7 +14,7 @@
 <span class="accessibility">
     {#if wheelchairBoarding === undefined || wheelchairBoarding === WheelchairAccessibility.NO_INFO}
         <span class="icon" aria-hidden="true" style:--icon-bg="var(--muted)">
-            <CircleHelp color="var(--fg-primary)" {size} />
+            <CircleQuestionMark color="var(--fg-primary)" {size} />
         </span>
         <span class="visually-hidden">No wheelchair boarding information</span>
     {:else if wheelchairBoarding === WheelchairAccessibility.ACCESSIBLE}

@@ -68,18 +68,40 @@
 
     const lineColor = $derived(route ? `#${route.color}` : "#ddd");
     const carriages = $derived(vehicle.carriages ?? []);
-    const hasOccupancyData = $derived(
+    const hasCarriageOccupancyData = $derived(
         carriages.some((c) => c.occupancy_status !== "NO_DATA_AVAILABLE"),
+    );
+
+    const vehicleMeta = $derived(
+        vehicle.occupancy_status
+            ? STATUS_META[vehicle.occupancy_status]
+            : undefined,
     );
 </script>
 
 <div class="console" style:--line-color={lineColor}>
     <div class="header">
         <!-- Vehicle label -->
-        <span class="vehicle-label">Vehicle {vehicle.label} </span>
+        <span class="vehicle-label">
+            <span>Vehicle {vehicle.label}</span>
+            {#if vehicleMeta}
+                <span
+                    class="segments vehicle-segments"
+                    style:--shade={vehicleMeta.shade}
+                    aria-label={vehicleMeta.label}
+                >
+                    {#each Array(4) as _, i}
+                        <span
+                            class="segment"
+                            class:filled={i < vehicleMeta.segments!}
+                        ></span>
+                    {/each}
+                </span>
+            {/if}</span
+        >
 
         <!-- If there are carriages but not occupancy data, specify this -->
-        {#if carriages.length > 0 && !hasOccupancyData}
+        {#if carriages.length > 0 && !hasCarriageOccupancyData && !vehicle.occupancy_status}
             <div class="no-data-note">
                 <CircleDashed size={13} strokeWidth={2} />
                 <span>No occupancy data available</span>
@@ -106,17 +128,17 @@
                         class="carriage"
                         class:nose-left={i === 0}
                         class:nose-right={i === carriages.length - 1}
-                        class:closed={hasOccupancyData &&
+                        class:closed={hasCarriageOccupancyData &&
                             meta.kind === "closed"}
                         role="listitem"
                         aria-label="{i === 0 ? 'Front carriage' : 'Carriage'}
-                        {carriage.label}{hasOccupancyData
+                        {carriage.label}{hasCarriageOccupancyData
                             ? `, ${meta.label}`
                             : ''}"
                     >
                         <span class="carriage-label">{carriage.label}</span>
 
-                        {#if hasOccupancyData}
+                        {#if hasCarriageOccupancyData}
                             <div class="occupancy-indicator">
                                 {#if meta.kind === "scale"}
                                     <!-- For normal occupancy, data, show some number of
@@ -177,6 +199,9 @@
     }
 
     .vehicle-label {
+        display: inline-flex;
+        align-items: center;
+        gap: 1em;
         font-weight: bold;
         font-size: var(--font-size-s);
     }
@@ -272,5 +297,11 @@
 
     .segment.filled {
         background: oklch(from var(--line-color) calc(l * var(--shade)) c h);
+    }
+
+    .vehicle-segments {
+        padding: 6px 8px;
+        border-radius: 8px;
+        background-color: var(--muted);
     }
 </style>
