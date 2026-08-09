@@ -13,7 +13,7 @@
     "dev:shared": "npm run dev --workspace=shared -- --preserveWatchOutput"
   },
   "devDependencies": {
-    "concurrently": "^9.2.1"
+    "concurrently": "^10.0.4"
   },
   "overrides": {
     "@t-minus/app": {
@@ -21,5 +21,9 @@
         "cookie": "^0.7.0"
       }
     }
+  },
+  "allowScripts": {
+    "esbuild@0.25.12": true,
+    "esbuild@0.28.2": true
   }
 }
