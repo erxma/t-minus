@@ -108,7 +108,7 @@ export function flattenResource(
     // Replace any "type" attribute with "type_"
     // JSON:API prohibits such an attribute but it occurs in MBTA API
     const attributes = { ...resource.attributes };
-    if (attributes.type) {
+    if (attributes.type !== undefined) {
         attributes.type_ = attributes.type;
         delete attributes.type;
     }

@@ -33,6 +33,7 @@
 
     #link-subway {
         background-color: #494f5b;
+        color: white;
     }
 
     #link-bus {
@@ -42,5 +43,6 @@
 
     #link-cr {
         background-color: #80276c;
+        color: white;
     }
 </style>

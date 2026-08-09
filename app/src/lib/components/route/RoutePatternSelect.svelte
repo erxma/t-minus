@@ -1,17 +1,16 @@
 <script lang="ts">
     import "$lib/global.css";
-    import RoutePill from "../common/RoutePill.svelte";
     import "./route-select.css";
 
     import type { RoutePatternResource, RouteResource } from "@t-minus/shared";
 
     import { ArrowRightLeft, ChevronDown } from "@lucide/svelte";
     import { Select } from "bits-ui";
+    import RoutePill from "../common/RoutePill.svelte";
 
     interface Props {
-        routeOptions: RouteResource[];
         /** The route to show info for. */
-        selectedRoute: RouteResource;
+        route: RouteResource;
         /** ID of the direction to show info for. Defaults to 0. */
         selectedDirectionId: number;
         /** The route pattern to show info for. Default to first for route and direction. */
@@ -19,20 +18,19 @@
     }
 
     let {
-        routeOptions,
-        selectedRoute = $bindable(),
+        route,
         selectedDirectionId = $bindable(),
         selectedRoutePattern = $bindable(),
     }: Props = $props();
 
     const routePatternOptions = $derived(
-        selectedRoute.route_patterns!.filter(
+        route.route_patterns!.filter(
             (p) => p.direction_id === selectedDirectionId,
         ),
     );
 
     const directionDisplayName: string = $derived.by(() => {
-        const name = selectedRoute.direction_names![selectedDirectionId];
+        const name = route.direction_names![selectedDirectionId];
         if (name.endsWith("bound")) {
             return name;
         } else {
@@ -46,32 +44,7 @@
 </script>
 
 <div class="container">
-    <Select.Root
-        type="single"
-        onValueChange={(v) => {
-            selectedRoute = routeOptions.find((route) => route.id === v)!;
-        }}
-    >
-        <Select.Trigger aria-label="Select route">
-            <span class="select-trigger-inner">
-                <RoutePill route={selectedRoute} />
-                <ChevronDown />
-            </span>
-        </Select.Trigger>
-        <Select.Portal>
-            <Select.Content class="select-content">
-                {#each routeOptions as route (route.id)}
-                    <Select.Item
-                        value={route.id}
-                        label={route.long_name}
-                        class="select-item"
-                    >
-                        <RoutePill {route} size="var(--font-size-m)" />
-                    </Select.Item>
-                {/each}
-            </Select.Content>
-        </Select.Portal>
-    </Select.Root>
+    <RoutePill {route} />
 
     <div class="select-dir-and-pattern">
         <div class="dir-and-pattern-name">
@@ -83,10 +56,9 @@
                     <Select.Root
                         type="single"
                         onValueChange={(v) => {
-                            selectedRoutePattern =
-                                selectedRoute.route_patterns?.find(
-                                    (p) => p.id === v,
-                                )!;
+                            selectedRoutePattern = route.route_patterns?.find(
+                                (p) => p.id === v,
+                            )!;
                         }}
                     >
                         <Select.Trigger
