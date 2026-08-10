@@ -32,7 +32,7 @@
     import RelativeTime from "dayjs/plugin/relativeTime";
     import { onMount } from "svelte";
     import { Collapsible } from "bits-ui";
-    import VehicleCarriages from "./vehicles/VehicleCarriages.svelte";
+    import Vehicle from "./vehicles/Vehicle.svelte";
     dayjs.extend(RelativeTime);
 
     interface Props {
@@ -214,7 +214,7 @@
                                                     <!-- Vehicle info -->
                                                     {#if arrival.type === "prediction"}
                                                         {#if arrival.vehicle}
-                                                            <VehicleCarriages
+                                                            <Vehicle
                                                                 vehicle={arrival.vehicle}
                                                                 route={arrival.route!}
                                                             />

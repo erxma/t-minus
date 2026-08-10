@@ -353,7 +353,7 @@ export type OccupancyStatus =
     | "CRUSHED_STANDING_ROOM_ONLY"
     | "FULL"
     | "NOT_ACCEPTING_PASSENGERS"
-    | "NO DATA_AVAILABLE";
+    | "NO_DATA_AVAILABLE";
 
 export type VehicleStatus = "INCOMING_AT" | "STOPPED_AT" | "IN_TRANSIT_TO";
 

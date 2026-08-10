@@ -1,0 +1,23 @@
+.no-data-note {
+    display: flex;
+    align-items: center;
+    gap: 0.6em;
+    font-size: var(--font-size-xs);
+    color: var(--fg-primary);
+}
+
+.segments {
+    display: flex;
+    gap: 3px;
+}
+
+.segment {
+    width: 10px;
+    height: 6px;
+    border-radius: 2px;
+    background: #141414;
+}
+
+.segment.filled {
+    background: oklch(from var(--line-color) calc(l * var(--shade)) c h);
+}
