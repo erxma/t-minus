@@ -4,7 +4,7 @@
   "private": true,
   "type": "module",
   "scripts": {
-    "dev": "nodemon src/app.ts",
+    "dev": "tsx watch src/app.ts",
     "start": "node ./dist/app.js",
     "build": "rm -rf ./dist && npm run build:deps && tsc",
     "build:deps": "npm run build -w @t-minus/shared"
@@ -20,9 +20,8 @@
     "@types/express": "^5.0.6",
     "@types/node": "^26.2.0",
     "dotenv": "^17.4.2",
-    "nodemon": "^3.1.14",
     "prettier": "^3.9.6",
-    "ts-node": "^10.9.2",
+    "tsx": "^4.23.13",
     "typescript": "^7.0.2"
   }
 }
