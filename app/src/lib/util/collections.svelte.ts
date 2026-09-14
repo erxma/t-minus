@@ -152,7 +152,7 @@ export class MbtaStreamedCollection<R extends ResourceIdentifier> {
         } else {
             // In includes, should also match type
             this._included = this._included.filter(
-                (res) => res.type !== res.type || res.id !== removed.id,
+                (res) => res.type !== removed.type || res.id !== removed.id,
             );
         }
     }
