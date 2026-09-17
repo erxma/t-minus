@@ -15,7 +15,7 @@
     "test": "npm run test:unit -- --run"
   },
   "devDependencies": {
-    "@fast-check/vitest": "^0.4.1",
+    "@fast-check/vitest": "^0.5.0",
     "@sveltejs/adapter-netlify": "^6.0.4",
     "@sveltejs/adapter-node": "^5.5.7",
     "@sveltejs/kit": "^2.70.2",
@@ -34,7 +34,7 @@
     "svelte-check": "^4.7.5",
     "typescript": "~7.0.2",
     "vite": "^8.2.1",
-    "vitest": "^4.1.10"
+    "vitest": "^5.0.1"
   },
   "dependencies": {
     "@isaacs/ttlcache": "^2.1.5",
