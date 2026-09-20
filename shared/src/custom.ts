@@ -19,7 +19,7 @@ export async function fetchExpectedTimesForStop(
     client: MbtaApiClient,
     stopId: string,
     routeId?: string,
-): Promise<(PredictionResource | ScheduleResource)[]> {
+): Promise<ArrivalResource[]> {
     // First, fetch all the available predictions for the stop.
     const predictionsResponse = await client.fetch("predictions", {
         sort: "time",
@@ -219,7 +219,9 @@ export function entityIsAffectedByAlert(
  * - "Trips that begin between midnight and 3am are considered part of the previous service day."
  * - "To filter times after midnight use more than 24 hours."
  */
-function serviceDayAndTime(time: Readonly<Dayjs>): [day: string, time: string] {
+export function serviceDayAndTime(
+    time: Readonly<Dayjs>,
+): [day: string, time: string] {
     if (time.hour() < 3) {
         return [
             time.subtract(1, "day").format("YYYY-MM-DD"),
@@ -234,10 +236,10 @@ function serviceDayAndTime(time: Readonly<Dayjs>): [day: string, time: string] {
  * Combine a list of predictions and a list of schedules by eliminating duplicate
  * arrivals between the two and overall sorting by time.
  */
-function mergePredictionsAndSchedules(
+export function mergePredictionsAndSchedules(
     predictions: readonly Readonly<PredictionResource>[],
     schedules: readonly Readonly<ScheduleResource>[],
-): (PredictionResource | ScheduleResource)[] {
+): ArrivalResource[] {
     const schedsWithoutPreds = schedules.filter(
         (sched) => !predictions.some((pred) => pred.schedule?.id === sched.id),
     );
