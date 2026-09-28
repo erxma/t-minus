@@ -180,6 +180,11 @@
                                                         class="visually-hidden"
                                                         >Live prediction</span
                                                     >
+                                                    <span
+                                                        >{countdownText(
+                                                            arrival,
+                                                        )}</span
+                                                    >
                                                 {:else}
                                                     <span
                                                         aria-hidden="true"
@@ -190,14 +195,19 @@
                                                         class="visually-hidden"
                                                         >Scheduled</span
                                                     >
+                                                    <span>
+                                                        {countdownText(
+                                                            arrival,
+                                                        )}</span
+                                                    >
                                                 {/if}
-                                                <span
-                                                    >{countdownText(
-                                                        arrival,
-                                                    )}</span
+
+                                                <Collapsible.Trigger
+                                                    aria-label="Show arrival details"
                                                 >
-                                                <Collapsible.Trigger>
-                                                    <ChevronDown />
+                                                    <ChevronDown
+                                                        aria-hidden="true"
+                                                    />
                                                 </Collapsible.Trigger>
                                             </span>
                                         {/key}
@@ -212,16 +222,13 @@
                                                     class="arrival-extras-row"
                                                 >
                                                     <!-- Vehicle info -->
-                                                    {#if arrival.type === "prediction"}
-                                                        {#if arrival.vehicle}
-                                                            <Vehicle
-                                                                vehicle={arrival.vehicle}
-                                                                route={arrival.route!}
-                                                            />
-                                                        {:else}
-                                                            N/A
-                                                        {/if}
-                                                    {/if}
+                                                    <Vehicle
+                                                        vehicle={arrival.type ===
+                                                        "prediction"
+                                                            ? arrival.vehicle
+                                                            : undefined}
+                                                        route={arrival.route!}
+                                                    />
                                                 </div>
                                             {/if}
                                         {/snippet}
