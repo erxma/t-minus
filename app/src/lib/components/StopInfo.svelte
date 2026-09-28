@@ -196,9 +196,9 @@
                                                         >Scheduled</span
                                                     >
                                                     <span>
-                                                        {countdownText(
+                                                        ({countdownText(
                                                             arrival,
-                                                        )}</span
+                                                        )})</span
                                                     >
                                                 {/if}
 

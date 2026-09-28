@@ -1,12 +1,14 @@
 import dayjs from "dayjs";
-import type { PredictionResource, ScheduleResource } from "@t-minus/shared";
+import type {
+    ArrivalResource,
+    PredictionResource,
+    ScheduleResource,
+} from "@t-minus/shared";
 
 /**
  * For a given prediction or schedule, get the text indicating the time or other status
  */
-export function countdownText(
-    arrival: PredictionResource | ScheduleResource,
-): string {
+export function countdownText(arrival: ArrivalResource): string {
     if (arrival.type === "prediction") {
         return predictionCountdownText(arrival);
     } else {
@@ -86,5 +88,20 @@ export function scheduleCountdownText(schedule: ScheduleResource): string {
         schedule.arrival_time ?? schedule.departure_time,
     );
 
-    return referenceTime.format("h:mm A");
+    const time_left_secs = referenceTime.diff(dayjs(), "seconds");
+    // Equivalent minutes, rounded to int
+    const mins_rounded = Math.round(time_left_secs / 60);
+    if (time_left_secs <= 30) {
+        // If less than 30s, show "NOW"
+        return "NOW";
+    } else if (time_left_secs <= 60) {
+        // If less than 60s, show "1 min"
+        return "1 min";
+    } else if (mins_rounded <= 60) {
+        // Show the rounded minutes if it's 60 mins or less
+        return `${mins_rounded} min`;
+    } else {
+        // Otherwise, show the absolute time, e.g. 1:23 PM
+        return referenceTime.format("h:mm A");
+    }
 }

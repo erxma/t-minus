@@ -100,7 +100,6 @@
         gap: 6px;
         padding: 6px 8px;
         border-radius: 8px;
-
         font-size: var(--font-size-s);
     }
 </style>
