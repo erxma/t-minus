@@ -1,0 +1,8 @@
+packages:
+  - "app"
+  - "server"
+  - "shared"
+allowBuilds:
+  esbuild: true
+overrides:
+  "@sveltejs/kit>cookie": "^0.7.0"

@@ -5,14 +5,14 @@
   "type": "module",
   "scripts": {
     "dev": "vite",
-    "build": "npm run build:deps && vite build",
-    "build:deps": "npm run build -w @t-minus/shared",
+    "build": "pnpm build:deps && vite build",
+    "build:deps": "pnpm --filter @t-minus/shared build",
     "preview": "vite preview",
     "prepare": "svelte-kit sync || echo ''",
     "check": "svelte-kit sync && svelte-check --tsconfig ./tsconfig.json",
     "check:watch": "svelte-kit sync && svelte-check --tsconfig ./tsconfig.json --watch",
     "test:unit": "vitest",
-    "test": "npm run test:unit -- --run"
+    "test": "pnpm test:unit --run"
   },
   "devDependencies": {
     "@fast-check/vitest": "^0.5.0",
@@ -25,6 +25,7 @@
     "@tsconfig/svelte": "^5.0.8",
     "@types/leaflet": "^1.9.22",
     "@types/node": "^26.2.0",
+    "@typescript/native": "npm:typescript@^7.0.2",
     "clsx": "^2.1.1",
     "globals": "^17.9.0",
     "jsdom": "^30.0.1",
@@ -32,14 +33,14 @@
     "prettier-plugin-svelte": "^4.1.1",
     "svelte": "^5.56.8",
     "svelte-check": "^4.7.5",
-    "typescript": "~7.0.2",
+    "typescript": "~6.0.3",
     "vite": "^8.2.1",
     "vitest": "^5.0.1"
   },
   "dependencies": {
     "@isaacs/ttlcache": "^2.1.5",
     "@lucide/svelte": "^1.31.0",
-    "@t-minus/shared": "*",
+    "@t-minus/shared": "workspace:*",
     "bits-ui": "^2.18.1",
     "dayjs": "^1.11.21",
     "http-proxy": "^1.18.1",

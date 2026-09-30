@@ -1,29 +1,13 @@
 {
   "name": "t-minus",
   "private": true,
-  "workspaces": [
-    "app",
-    "server",
-    "shared"
-  ],
   "scripts": {
-    "dev": "concurrently \"npm run dev:app\" \"npm run dev:server\" \"npm run dev:shared\" -n app,server,shared --prefix-colors auto",
-    "dev:app": "npm run dev --workspace=app",
-    "dev:server": "npm run dev --workspace=server",
-    "dev:shared": "npm run dev --workspace=shared -- --preserveWatchOutput"
+    "dev": "concurrently \"pnpm dev:app\" \"pnpm dev:server\" \"pnpm dev:shared\" -n app,server,shared --prefix-colors auto",
+    "dev:app": "pnpm --filter app dev",
+    "dev:server": "pnpm --filter server dev",
+    "dev:shared": "pnpm --filter shared dev --preserveWatchOutput"
   },
   "devDependencies": {
     "concurrently": "^10.0.4"
-  },
-  "overrides": {
-    "@t-minus/app": {
-      "@sveltejs/kit": {
-        "cookie": "^0.7.0"
-      }
-    }
-  },
-  "allowScripts": {
-    "esbuild@0.25.12": true,
-    "esbuild@0.28.2": true
   }
 }
