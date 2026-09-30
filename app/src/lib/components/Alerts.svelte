@@ -22,11 +22,14 @@
     }
 </script>
 
-<Accordion.Root type="multiple">
+<Accordion.Root type="multiple" class="alerts-accordion-root">
     {#each sortedAlerts as alert}
-        <Accordion.Item>
+        <Accordion.Item class="alerts-accordion-item">
             <Accordion.Header>
-                <Accordion.Trigger disabled={!hasDetails(alert)}>
+                <Accordion.Trigger
+                    disabled={!hasDetails(alert)}
+                    class="alerts-accordion-trigger"
+                >
                     <div class="trigger-left">
                         <AlertIcon size="32" />
                         <div>{alert.header}</div>
@@ -38,7 +41,7 @@
                     {/if}
                 </Accordion.Trigger>
             </Accordion.Header>
-            <Accordion.Content>
+            <Accordion.Content class="alerts-accordion-content">
                 <div class="content-inner">
                     {#if alert.image}
                         <img

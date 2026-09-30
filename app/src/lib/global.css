@@ -30,7 +30,8 @@
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
 
-  font-family: "Open Sans", Inter, system-ui, Avenir, Helvetica, Arial, sans-serif;
+  font-family:
+    "Open Sans", Inter, system-ui, Avenir, Helvetica, Arial, sans-serif;
 }
 
 .dark {
@@ -118,59 +119,6 @@ button {
 
   border: none;
   background-color: var(--surface);
-}
-
-[data-accordion-root] {
-  display: flex;
-  flex-direction: column;
-  gap: 8px;
-}
-
-[data-accordion-trigger] {
-  border: none;
-
-  font-size: var(--font-size-m);
-  text-align: left;
-  background: var(--surface);
-  padding: 12px;
-
-  width: 100%;
-}
-
-[data-accordion-trigger][data-disabled] {
-  cursor: default;
-}
-
-[data-accordion-item] {
-  border: var(--border-primary);
-  border-radius: var(--border-radius);
-  overflow: hidden;
-}
-
-[data-accordion-content][data-state="closed"] {
-  animation: accordion-up 0.3s ease-out;
-}
-
-[data-accordion-content][data-state="open"] {
-  animation: accordion-down 0.3s ease-out;
-}
-
-@keyframes accordion-down {
-  from {
-    height: 0;
-  }
-  to {
-    height: var(--bits-accordion-content-height);
-  }
-}
-
-@keyframes accordion-up {
-  from {
-    height: var(--bits-accordion-content-height);
-  }
-  to {
-    height: 0;
-  }
 }
 
 .small-message {
