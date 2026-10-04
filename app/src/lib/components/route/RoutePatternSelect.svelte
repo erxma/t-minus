@@ -1,12 +1,11 @@
 <script lang="ts">
     import "$lib/global.css";
-    import "./route-select.css";
 
     import type { RoutePatternResource, RouteResource } from "@t-minus/shared";
 
     import { ArrowRightLeft, ChevronDown } from "@lucide/svelte";
-    import { Select } from "bits-ui";
     import RoutePill from "../common/RoutePill.svelte";
+    import { Select } from "melt/builders";
 
     interface Props {
         /** The route to show info for. */
@@ -41,6 +40,17 @@
     function onReverseDirection() {
         selectedDirectionId = selectedDirectionId === 0 ? 1 : 0;
     }
+
+    const select = new Select<string>({
+        value: () => selectedRoutePattern.id,
+        onValueChange: (v) => {
+            if (v !== undefined) {
+                selectedRoutePattern = route.route_patterns?.find(
+                    (p) => p.id === v,
+                )!;
+            }
+        },
+    });
 </script>
 
 <div class="container">
@@ -53,38 +63,25 @@
             >
             <div class="select-pattern">
                 {#if routePatternOptions.length > 1}
-                    <Select.Root
-                        type="single"
-                        onValueChange={(v) => {
-                            selectedRoutePattern = route.route_patterns?.find(
-                                (p) => p.id === v,
-                            )!;
-                        }}
+                    <button
+                        {...select.trigger}
+                        aria-label="Select route pattern"
+                        class="select-trigger"
                     >
-                        <Select.Trigger
-                            aria-label="Select route pattern"
-                            class="select-trigger-pattern"
-                        >
-                            <span
-                                class="select-trigger-inner select-trigger-inner-pattern pattern-name"
+                        <b>{selectedRoutePattern.name}</b>
+                        <ChevronDown />
+                    </button>
+
+                    <div {...select.content} class="select-content">
+                        {#each routePatternOptions as pattern (pattern.id)}
+                            <div
+                                {...select.getOption(pattern.id, pattern.name)}
+                                class="select-item"
                             >
-                                <b>{selectedRoutePattern.name}</b>
-                                <ChevronDown />
-                            </span></Select.Trigger
-                        >
-                        <Select.Portal>
-                            <Select.Content class="select-content">
-                                {#each routePatternOptions as pattern (pattern.id)}
-                                    <Select.Item
-                                        value={pattern.id}
-                                        label={pattern.name}
-                                        class="select-item select-item-pattern"
-                                        >{pattern.name}</Select.Item
-                                    >
-                                {/each}
-                            </Select.Content>
-                        </Select.Portal>
-                    </Select.Root>
+                                {pattern.name}
+                            </div>
+                        {/each}
+                    </div>
                 {:else}
                     <span class="pattern-name"
                         ><b>{selectedRoutePattern.name}</b></span
@@ -110,12 +107,6 @@
         margin: 12px;
     }
 
-    .select-trigger-inner {
-        display: inline-flex;
-        align-items: center;
-        color: var(--fg-primary);
-    }
-
     .select-dir-and-pattern {
         width: 100%;
         display: flex;
@@ -129,12 +120,54 @@
         flex-direction: column;
     }
 
-    .pattern-name {
+    .select-pattern {
+        font-size: var(--font-size-l);
+    }
+
+    .select-trigger {
+        display: inline-flex;
+        align-items: center;
+        padding: 0;
+
+        border: none;
+        background: none;
+        color: var(--fg-primary);
+        font-size: inherit;
         text-align: left;
     }
 
-    .select-trigger-inner-pattern,
-    .select-pattern {
-        font-size: var(--font-size-l);
+    .select-content {
+        /* Reset UA popover positioning */
+        margin: 0;
+        inset: auto;
+
+        flex-direction: column;
+        align-items: center;
+        padding: 8px;
+        max-height: 300px;
+        overflow-y: scroll;
+
+        background-color: var(--bg-primary);
+        border: var(--border-primary);
+        border-radius: var(--border-radius);
+        user-select: none;
+    }
+
+    .select-content:popover-open {
+        display: flex;
+    }
+
+    .select-item {
+        display: flex;
+        justify-content: center;
+        width: 100%;
+        padding: 6px;
+        box-sizing: border-box;
+        border-radius: var(--border-radius);
+        user-select: none;
+    }
+
+    .select-item[data-highlighted] {
+        outline: 2px solid var(--fg-primary);
     }
 </style>

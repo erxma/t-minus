@@ -2,7 +2,13 @@ packages:
   - "app"
   - "server"
   - "shared"
+
 allowBuilds:
   esbuild: true
+
 overrides:
   "@sveltejs/kit>cookie": "^0.7.0"
+
+packageExtensions:
+  "vaul-svelte":
+    dependencies: { "bits-ui": "1.0.0-next.7" }
