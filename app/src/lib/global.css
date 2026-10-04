@@ -95,20 +95,10 @@ button {
 }
 
 .drawer-content-default {
-  position: fixed;
   display: flex;
   flex-direction: column;
-  left: 0;
-  right: 0;
-  bottom: 0;
   height: 75%;
   background-color: var(--bg-primary);
-  z-index: var(--z-index-overlay);
-}
-
-.drawer-overlay-default {
-  position: fixed;
-  inset: 0;
 }
 
 .drawer-close-default {

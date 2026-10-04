@@ -7,8 +7,6 @@ settings:
 overrides:
   '@sveltejs/kit>cookie': ^0.7.0
 
-packageExtensionsChecksum: sha256-OdC0aynudSWSr2XYYN/2AtTUpfnCLrn6ANSNZYfSFWU=
-
 importers:
 
   .:
@@ -19,6 +17,9 @@ importers:
 
   app:
     dependencies:
+      '@harshmandan/svaul':
+        specifier: ^2.0.0
+        version: 2.0.0(svelte@5.56.8)
       '@isaacs/ttlcache':
         specifier: ^2.1.5
         version: 2.1.5
@@ -43,9 +44,6 @@ importers:
       tiny-invariant:
         specifier: ^1.3.3
         version: 1.3.3
-      vaul-svelte:
-        specifier: ^1.0.0-next.6
-        version: 1.0.0-next.7(svelte@5.56.8)
     devDependencies:
       '@fast-check/vitest':
         specifier: ^0.5.0
@@ -564,11 +562,13 @@ packages:
   '@floating-ui/utils@0.2.10':
     resolution: {integrity: sha512-aGTxbpbg8/b5JfU1HXSrbH3wXZuLPJcNEcZQFMxLs3oSzgtVu6nFPkbbGGUvBcUjKV2YyB9Wxxabo+HEH9tcRQ==}
 
+  '@harshmandan/svaul@2.0.0':
+    resolution: {integrity: sha512-tNMm//83Y6s/ybU2CCPwYKkneahg/LpADbNQJiRENTBgDEdUti2EzeEDZfF90ToPBdLfeNw9/kN+qm6r0ePzHA==}
+    peerDependencies:
+      svelte: ^5.29.0
+
   '@iarna/toml@2.2.5':
     resolution: {integrity: sha512-trnsAYxU3xnS1gPHPyU961coFyLkh4gAD/0zQ5mymY4yOZ+CYvsPqUbOFSw0aDM4y0tV7tiFxL/1XfXPNC6IPg==}
-
-  '@internationalized/date@3.12.4':
-    resolution: {integrity: sha512-M1dEn4c1U1HsSlaVR8upZtSqvXrTkHDfv18H01uCSJyjVLDxnBR38v/fMxecmlwXKR4i9HeZcmgQAPE6A+aGJQ==}
 
   '@isaacs/ttlcache@2.1.5':
     resolution: {integrity: sha512-VwGZqqjAWPICTmxUZnbpEfO60LhPWzquik+bmyXGY7pYRn6diEvCI5i6Ca+J6o2y4vS73HrpuMTo2dOvUevH8w==}
@@ -936,9 +936,6 @@ packages:
       svelte: ^5.46.4
       vite: ^8.0.0-beta.7 || ^8.0.0
 
-  '@swc/helpers@0.5.23':
-    resolution: {integrity: sha512-5lSsMOTXURePglDfvuAQUqkGek9Hg2kksOYay2m0+XR++b2NWYL/4sWyuvVBIs8oKnJaxkdi9whaL/sqN13afw==}
-
   '@testing-library/dom@10.4.1':
     resolution: {integrity: sha512-o4PXJQidqJl82ckFaXUeoAW+XysPLauYI43Abki5hABd853iMhitooc6znOnczgbTYmEP6U6/y1ZyKAIsvMKGg==}
     engines: {node: '>=18'}
@@ -1215,12 +1212,6 @@ packages:
 
   bidi-js@1.0.3:
     resolution: {integrity: sha512-RKshQI1R3YQ+n9YJz2QQ147P66ELpa1FQEg20Dk8oW9t2KgLbpDLLp9aGZ7y8WHSshDknG0bknqGw5/tyCs5tw==}
-
-  bits-ui@1.0.0-next.7:
-    resolution: {integrity: sha512-l1jZ955++CoJEK2a/Aj+oDhMuT3HOgzufVed4S+eWildftPXrD09hETcOrPAYwyaC/NalnTj7g7O5OilbNOZng==}
-    engines: {node: '>=18', pnpm: '>=8.7.0'}
-    peerDependencies:
-      svelte: ^5.0.0-next.1
 
   body-parser@2.2.2:
     resolution: {integrity: sha512-oP5VkATKlNwcgvxi0vM0p/D3n2C3EReYVX+DNYs5TjZFn/oQt2j+4sVJtSMr18pdRr8wjTcBl6LoV+FUwzPmNA==}
@@ -1556,9 +1547,6 @@ packages:
 
   inherits@2.0.4:
     resolution: {integrity: sha512-k/vGaX4/Yla3WzyMCvTQOXYeIHvqOKtnqBduzTHpzpQZzAskKMhZ2K+EnBiSM9zGSoIFeMpXKxa4dYeZIQqewQ==}
-
-  inline-style-parser@0.2.7:
-    resolution: {integrity: sha512-Nb2ctOyNR8DqQoR0OwRG95uNWIC0C1lCgf5Naz5H6Ji72KZ8OcFZLz2P5sNgwlyoJ8Yif11oMuYs5pBQa86csA==}
 
   ipaddr.js@1.9.1:
     resolution: {integrity: sha512-0KI/607xoxSToH7GjN1FfSbLoU0+btTicjsQSWQlh/hZykN8KpmMf7uYwPW3R+akZ6R/w18ZlXSHBYXiYUPO3g==}
@@ -1915,11 +1903,6 @@ packages:
     resolution: {integrity: sha512-nLTrUKm2UyiL7rlhapu/Zl45FwNgkZGaCpZbIHajDYgwlJCOzLSk+cIPAnsEqV955GjILJnKbdQC1nVPz+gAYQ==}
     engines: {node: '>= 18'}
 
-  runed@0.15.4:
-    resolution: {integrity: sha512-kmbpstUd7v2FdlBM+MT78IyuOVd38tq/e7MHvVb0fnVCsPSPMD/m2Xh+wUhzg9qCJgxRjBbIKu68DlH/x5VXJA==}
-    peerDependencies:
-      svelte: ^5.0.0-next.1
-
   runed@0.23.4:
     resolution: {integrity: sha512-9q8oUiBYeXIDLWNK5DfCWlkL0EW3oGbk845VdKlPeia28l751VpfesaB/+7pI6rnbx1I6rqoZ2fZxptOJLxILA==}
     peerDependencies:
@@ -1938,9 +1921,6 @@ packages:
   saxes@6.0.0:
     resolution: {integrity: sha512-xAg7SOnEhrm5zI3puOOKyy1OMcMlIJZYNJY7xLBwSze0UjhPLnWfj2GF2EpT0jmzaJKIWKHLsaSSajf35bcYnA==}
     engines: {node: '>=v12.22.7'}
-
-  scule@1.3.0:
-    resolution: {integrity: sha512-6FtHJEvt+pVMIB9IBY+IcCJ6Z5f1iQnytgyfKMhDKgmzYG+TeH/wx1y3l27rshSbLiSanrR9ffZDrEsmjlQF2g==}
 
   send@1.2.1:
     resolution: {integrity: sha512-1gnZf7DFcoIcajTjTwjwuDjzuz4PPcY2StKPlsGAQ1+YH20IRVrBaXSWmdjowTJ6u8Rc01PoYOGHXfP1mYcZNQ==}
@@ -2009,12 +1989,6 @@ packages:
     resolution: {integrity: sha512-laJTa3Jb+VQpaC6DseHhF7dXVqHTfJPCRDaEbid/drOhgitgYku/letMUqOXFoWV0zIIUbjpdH2t+tYj4bQMRQ==}
     engines: {node: '>=8'}
 
-  style-object-to-css-string@1.1.3:
-    resolution: {integrity: sha512-bISQoUsir/qGfo7vY8rw00ia9nnyE1jvYt3zZ2jhdkcXZ6dAEi74inMzQ6On57vFI+I4Fck6wOv5UI9BEwJDgw==}
-
-  style-to-object@1.0.14:
-    resolution: {integrity: sha512-LIN7rULI0jBscWQYaSswptyderlarFkjQ+t79nzty8tcIAceVomEVlLzH5VP4Cmsv6MtKhs7qaAiwlcp+Mgaxw==}
-
   supports-color@10.2.2:
     resolution: {integrity: sha512-SS+jx45GF1QjgEXQx4NJZV9ImqmO2NPz5FNsIHrsDjh2YsHnawpan7SNQ1o8NuhrbHZy9AZhIoCUiCeaW/C80g==}
     engines: {node: '>=18'}
@@ -2034,18 +2008,6 @@ packages:
     peerDependencies:
       svelte: ^4.0.0 || ^5.0.0-next.0
       typescript: ^5.0.0 || ^6.0.0
-
-  svelte-toolbelt@0.3.1:
-    resolution: {integrity: sha512-RL7/iOpvZQF499fjl+P76LkZUgekK6joXfbZwc3sQzFIMhl1wgBCVL3lfsYOfEF4u9SfeD8BNFlgs1pfJh09kw==}
-    engines: {node: '>=20', pnpm: '>=8.7.0'}
-    peerDependencies:
-      svelte: ^5.0.0-next.126
-
-  svelte-toolbelt@0.7.1:
-    resolution: {integrity: sha512-HcBOcR17Vx9bjaOceUvxkY3nGmbBmCBBbuWLLEWO6jtmWH8f/QoWmbyUfQZrpDINH39en1b8mptfPQT9VKQ1xQ==}
-    engines: {node: '>=18', pnpm: '>=8.7.0'}
-    peerDependencies:
-      svelte: ^5.0.0
 
   svelte@5.56.8:
     resolution: {integrity: sha512-PY8LOw7xP6c8IOiVqdo0sbbZVYhXRSfklOQLAUyGBKqjTX0wx/z4l/9J+PmBpmlLnxzEb1NqltxQ5/wZme/Cmg==}
@@ -2139,12 +2101,6 @@ packages:
   vary@1.1.2:
     resolution: {integrity: sha512-BNGbWLfd0eUPabhkXUVm0j8uuvREyTh5ovRa/dyow/BqAbZJyC+5fU+IzQOzmAKzYqYRAISoRhdQr3eIZ/PXqg==}
     engines: {node: '>= 0.8'}
-
-  vaul-svelte@1.0.0-next.7:
-    resolution: {integrity: sha512-7zN7Bi3dFQixvvbUJY9uGDe7Ws/dGZeBQR2pXdXmzQiakjrxBvWo0QrmsX3HK+VH+SZOltz378cmgmCS9f9rSg==}
-    engines: {node: '>=18', pnpm: '>=8.7.0'}
-    peerDependencies:
-      svelte: ^5.0.0
 
   vite@8.2.1:
     resolution: {integrity: sha512-EU/eS7BH3XROHh2YnBefjM6DBKA6ZeMZEYQbj7NLWg5wHYlhB8B/Mayd5XsgWq+NFYccDOTemRpdETWR6Ka/lw==}
@@ -2523,11 +2479,11 @@ snapshots:
 
   '@floating-ui/utils@0.2.10': {}
 
-  '@iarna/toml@2.2.5': {}
-
-  '@internationalized/date@3.12.4':
+  '@harshmandan/svaul@2.0.0(svelte@5.56.8)':
     dependencies:
-      '@swc/helpers': 0.5.23
+      svelte: 5.56.8
+
+  '@iarna/toml@2.2.5': {}
 
   '@isaacs/ttlcache@2.1.5': {}
 
@@ -2781,10 +2737,6 @@ snapshots:
       vite: 8.2.1(@types/node@26.2.0)(esbuild@0.28.2)(tsx@4.23.13)
       vitefu: 1.1.3(vite@8.2.1(@types/node@26.2.0)(esbuild@0.28.2)(tsx@4.23.13))
 
-  '@swc/helpers@0.5.23':
-    dependencies:
-      tslib: 2.8.1
-
   '@testing-library/dom@10.4.1':
     dependencies:
       '@babel/code-frame': 7.28.6
@@ -2994,18 +2946,6 @@ snapshots:
   bidi-js@1.0.3:
     dependencies:
       require-from-string: 2.0.2
-
-  bits-ui@1.0.0-next.7(svelte@5.56.8):
-    dependencies:
-      '@floating-ui/core': 1.7.3
-      '@floating-ui/dom': 1.7.4
-      '@internationalized/date': 3.12.4
-      clsx: 2.1.1
-      esm-env: 1.2.2
-      runed: 0.15.4(svelte@5.56.8)
-      style-to-object: 1.0.14
-      svelte: 5.56.8
-      svelte-toolbelt: 0.3.1(svelte@5.56.8)
 
   body-parser@2.2.2:
     dependencies:
@@ -3379,8 +3319,6 @@ snapshots:
 
   inherits@2.0.4: {}
 
-  inline-style-parser@0.2.7: {}
-
   ipaddr.js@1.9.1: {}
 
   is-core-module@2.16.1:
@@ -3731,11 +3669,6 @@ snapshots:
     transitivePeerDependencies:
       - supports-color
 
-  runed@0.15.4(svelte@5.56.8):
-    dependencies:
-      esm-env: 1.2.2
-      svelte: 5.56.8
-
   runed@0.23.4(svelte@5.56.8):
     dependencies:
       esm-env: 1.2.2
@@ -3754,8 +3687,6 @@ snapshots:
   saxes@6.0.0:
     dependencies:
       xmlchars: 2.2.0
-
-  scule@1.3.0: {}
 
   send@1.2.1:
     dependencies:
@@ -3846,12 +3777,6 @@ snapshots:
     dependencies:
       min-indent: 1.0.1
 
-  style-object-to-css-string@1.1.3: {}
-
-  style-to-object@1.0.14:
-    dependencies:
-      inline-style-parser: 0.2.7
-
   supports-color@10.2.2: {}
 
   supports-color@7.2.0:
@@ -3872,21 +3797,6 @@ snapshots:
       typescript: 6.0.3
     transitivePeerDependencies:
       - picomatch
-
-  svelte-toolbelt@0.3.1(svelte@5.56.8):
-    dependencies:
-      clsx: 2.1.1
-      scule: 1.3.0
-      style-object-to-css-string: 1.1.3
-      style-to-object: 1.0.14
-      svelte: 5.56.8
-
-  svelte-toolbelt@0.7.1(svelte@5.56.8):
-    dependencies:
-      clsx: 2.1.1
-      runed: 0.23.4(svelte@5.56.8)
-      style-to-object: 1.0.14
-      svelte: 5.56.8
 
   svelte@5.56.8:
     dependencies:
@@ -3994,13 +3904,6 @@ snapshots:
   unpipe@1.0.0: {}
 
   vary@1.1.2: {}
-
-  vaul-svelte@1.0.0-next.7(svelte@5.56.8):
-    dependencies:
-      bits-ui: 1.0.0-next.7(svelte@5.56.8)
-      runed: 0.23.4(svelte@5.56.8)
-      svelte: 5.56.8
-      svelte-toolbelt: 0.7.1(svelte@5.56.8)
 
   vite@8.2.1(@types/node@26.2.0)(esbuild@0.28.2)(tsx@4.23.13):
     dependencies:

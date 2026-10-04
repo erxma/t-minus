@@ -26,7 +26,7 @@
     import RoutePatternSelect from "$lib/components/route/RoutePatternSelect.svelte";
     import StopList from "$lib/components/route/StopList.svelte";
     import StopInfo from "$lib/components/StopInfo.svelte";
-    import { Drawer } from "vaul-svelte";
+    import { Drawer } from "@harshmandan/svaul";
     import { fade } from "svelte/transition";
     import { Milestone } from "@lucide/svelte";
     import { isLargeScreen } from "$lib/util/media.svelte";
@@ -272,6 +272,8 @@
     {/snippet}
 
     <!-- On large screens, show to the side; on small, use drawer -->
+    <!-- Conditionals are written this way for sake of SSR
+    where isLargeScreen() is falsy -->
     <div class="side-info-panel">
         {#if isLargeScreen() && selectedStop}
             {@render stopViewContent()}
@@ -288,20 +290,24 @@
     </div>
 
     {#if !isLargeScreen()}
-        <Drawer.Root
-            shouldScaleBackground
+        <Drawer
+            scaleBackground
             bind:open={() => drawerOpen, setDrawerOpen}
+            class="drawer-content-default"
         >
-            <Drawer.Portal>
-                <Drawer.Overlay class="drawer-overlay-default" />
-                <Drawer.Content class="drawer-content-default">
-                    <Drawer.Close class="drawer-close-default"
-                        ><div class="drawer-handle"></div></Drawer.Close
-                    >
-                    {@render stopViewContent()}
-                </Drawer.Content>
-            </Drawer.Portal>
-        </Drawer.Root>
+            {#snippet handle()}
+                <button
+                    type="button"
+                    class="drawer-close-default"
+                    onclick={() => setDrawerOpen(false)}
+                    aria-label="close"
+                >
+                    <div class="drawer-handle"></div>
+                </button>
+            {/snippet}
+
+            {@render stopViewContent()}
+        </Drawer>
     {/if}
 </main>
 
