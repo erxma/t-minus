@@ -8,6 +8,6 @@
     "dev:shared": "pnpm --filter shared dev --preserveWatchOutput"
   },
   "devDependencies": {
-    "concurrently": "^10.0.4"
+    "concurrently": "^10.0.7"
   }
 }
