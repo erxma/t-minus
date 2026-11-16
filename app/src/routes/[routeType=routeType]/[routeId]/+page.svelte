@@ -188,21 +188,13 @@
                 "alerts",
                 alertsFetchParams,
             );
-
-            const timeAscending = <T extends ArrivalResource>(a: T, b: T) =>
-                dayjs(a.arrival_time ?? a.departure_time).diff(
-                    b.arrival_time ?? b.departure_time,
-                );
-
             schedules = new MbtaStreamedCollection(
                 "schedule",
                 schedulesEventSource,
-                timeAscending,
             );
             predictions = new MbtaStreamedCollection(
                 "prediction",
                 predictionsEventSource,
-                timeAscending,
             );
             alerts = new MbtaStreamedCollection("alert", alertsEventSource);
         }
@@ -220,7 +212,7 @@
         drawerOpen = value;
         // If closing drawer, deselect stop
         if (!drawerOpen) {
-            selectedStop = undefined;
+            setSelectedStop(undefined);
         }
     }
 </script>

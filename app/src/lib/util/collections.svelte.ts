@@ -27,6 +27,15 @@ export class MbtaStreamedCollection<R extends ResourceIdentifier> {
      */
     onError?: (err: Error) => void;
 
+    /** The contained data, flattened and denomalized,
+     * and sorted by the order specified for this collection.
+     */
+    readonly data: readonly Readonly<R>[] | undefined = $derived.by(() =>
+        this._primaryData
+            ?.map((res) => flattenResource(res, this._included) as R)
+            .sort(this.orderCmp),
+    );
+
     /** The expected "type" field for the primary data resources in this collection. */
     // TODO: This and resource type are associated
     // TODO: Likely issues if there are includes of same type
@@ -35,13 +44,25 @@ export class MbtaStreamedCollection<R extends ResourceIdentifier> {
     private _primaryData?: JsonApiResource[] = $state();
     /** Any resources included as relationships for the primary resources. */
     private _included?: JsonApiResource[] = $state();
+
     /** The EventSource for the API's SSEs. */
     private readonly eventSource: EventSource;
+
+    /** Delay for flushing the handler calls in `_queued`. */
+    private readonly _flushIntervalMs: number;
+    /** Upon receiving events, handler calls are enqueued here for processing
+     * in one go, so a burst of SSEs triggers in short succession (which is
+     * typical) triggers Svelte only once.
+     */
+    private _queued: (() => void)[] = [];
+    /** Timeout for currently pending flush. */
+    private _flushTimer: ReturnType<typeof setTimeout> | undefined;
 
     constructor(
         type: string,
         eventSource: EventSource,
         orderCmp?: (a: Readonly<R>, b: Readonly<R>) => number,
+        flushIntervalMs?: number,
     ) {
         // Store these fields as is
         this.primaryType = type;
@@ -53,25 +74,28 @@ export class MbtaStreamedCollection<R extends ResourceIdentifier> {
         this._included = undefined;
 
         // Add event handlers
-        eventSource.addEventListener("reset", (msg) => this.onReset(msg));
-        eventSource.addEventListener("add", (msg) => this.onAdd(msg));
-        eventSource.addEventListener("update", (msg) => this.onUpdate(msg));
-        eventSource.addEventListener("remove", (msg) => this.onRemove(msg));
-
+        eventSource.addEventListener("reset", (msg) => {
+            clearTimeout(this._flushTimer);
+            this._flushTimer = undefined;
+            this._queued = [];
+            this.onReset(msg);
+        });
+        eventSource.addEventListener("add", (msg) =>
+            this.enqueue(() => this.onAdd(msg)),
+        );
+        eventSource.addEventListener("update", (msg) =>
+            this.enqueue(() => this.onUpdate(msg)),
+        );
+        eventSource.addEventListener("remove", (msg) =>
+            this.enqueue(() => this.onRemove(msg)),
+        );
         eventSource.onerror = (err) => {
             this.onError?.(
                 new Error(`Failure in server-sent event stream: ${err}`),
             );
         };
-    }
 
-    /** The contained data, flattened and denomalized,
-     * and sorted by the order specified for this collection.
-     */
-    get data(): readonly Readonly<R>[] | undefined {
-        return this._primaryData
-            ?.map((res) => flattenResource(res, this._included) as R)
-            .sort(this.orderCmp);
+        this._flushIntervalMs = flushIntervalMs ?? 500;
     }
 
     /** Close the connection listening for API server events. */
@@ -154,6 +178,24 @@ export class MbtaStreamedCollection<R extends ResourceIdentifier> {
             this._included = this._included.filter(
                 (res) => res.type !== removed.type || res.id !== removed.id,
             );
+        }
+    }
+
+    private enqueue(fn: () => void) {
+        this._queued.push(fn);
+        // Only start a new timer if there isn't already one pending
+        this._flushTimer ??= setTimeout(this.flush, this._flushIntervalMs);
+    }
+
+    private flush() {
+        this._flushTimer = undefined;
+        const flushed = this._queued.splice(0);
+        for (const fn of flushed) {
+            try {
+                fn();
+            } catch (e) {
+                this.onError?.(e as Error);
+            }
         }
     }
 }
